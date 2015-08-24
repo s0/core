@@ -13,6 +13,19 @@ $(document).ready(function(){
 
   var $stage = $('#stage');
   var $hex_background = $stage.children('.hex-background:first');
+  var $interaction = $stage.children('.interaction:first');
+
+  var touch_overlay_templates = {};
+
+  var _touch_state = {
+    touches: {}
+  }
+
+  // Collect Templates
+  $('#templates .touch-overlays:first').children().each(function(){
+    var $this = $(this);
+    touch_overlay_templates[$this.data('overlay')] = $this;
+  });
 
   function redraw(){
 
@@ -142,6 +155,51 @@ $(document).ready(function(){
 
   $(window).resize(redraw);
   redraw();
+
+  $(window).on("touchstart", function(e){
+    console.log(e.originalEvent.changedTouches);
+    for(var i =0; i < e.originalEvent.changedTouches.length; i++){
+      var _touch = e.originalEvent.changedTouches[i];
+      var $touch_point = touch_overlay_templates["multi-0"].clone();
+      $touch_point.appendTo($interaction);
+      $touch_point.css({
+        top: _touch.clientY,
+        left: _touch.clientX
+      });
+      _touch_state.touches[_touch.identifier] = {
+        has_overlay: true,
+        overlay: $touch_point
+      };
+    }
+    e.preventDefault();
+  }).on("touchmove", function(e){
+    for(var i =0; i < e.originalEvent.changedTouches.length; i++){
+      var _touch = e.originalEvent.changedTouches[i];
+      var _t = _touch_state.touches[_touch.identifier];
+      if(_t.has_overlay){
+        _t.overlay.css({
+          top: _touch.clientY,
+          left: _touch.clientX
+        });
+      }
+      e.preventDefault();
+    }
+  }).on("touchend", function(e){
+    for(var i =0; i < e.originalEvent.changedTouches.length; i++){
+      var _touch = e.originalEvent.changedTouches[i];
+      var _t = _touch_state.touches[_touch.identifier];
+      if(_t.has_overlay){
+        _t.overlay.remove();
+      }
+      delete _touch_state.touches[_touch.identifier];
+    }
+    // cleanup everything
+    if(e.originalEvent.touches.length === 0){
+      _touch_state.touches = {};
+      $interaction.html();
+    }
+    e.preventDefault();
+  });
 
 
 });
