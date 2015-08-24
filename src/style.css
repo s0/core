@@ -56,13 +56,168 @@ polygon.hex-polygon.pad:hover {
   width: 0;
 }
 
-#stage .interaction .touch-overlay.multi-0::before {
-  content: "";
+#stage .interaction .touch-overlay.multi .ring-1 {
   position: absolute;
-  top: -20px;
-  left: -20px;
-  border-radius: 50px;
+  top: -42px;
+  left: -42px;
+  border-radius: 50%;
+  height: 80px;
+  width: 80px;
+  border: 2px solid rgba(32, 204, 255, 0.5);
+}
+
+#stage .interaction .touch-overlay.multi .ring-2 {
+  position: absolute;
+  top: -35px;
+  left: -35px;
+  border-radius: 50%;
+  height: 60px;
+  width: 60px;
+  border: 5px solid rgba(32, 204, 255, 1);
+  box-shadow: inset 0px 0px 10px rgba(32, 204, 255, 0.7), 0px 0px 10px rgba(32, 204, 255, 0.7);
+}
+
+#stage .interaction .touch-overlay.multi .ring-3 {
+  position: absolute;
+  top: -63px;
+  left: -63px;
+  border-radius: 50%;
+  height: 120px;
+  width: 120px;
+  border: 3px solid rgba(0, 233, 81, 1);
+  box-shadow: inset 0px 0px 10px rgba(0, 233, 81, 0.7), 0px 0px 10px rgba(0, 233, 81, 0.7);
+}
+
+#stage .interaction .touch-overlay.multi .arcs-1 {
+  position: absolute;
+  top: -56px;
+  left: -56px;
+  border-radius: 50%;
+  height: 100px;
+  width: 100px;
+  border: 6px solid rgba(32, 204, 255, 0.5);
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+}
+
+#stage .interaction .touch-overlay.multi .arcs-2 {
+  position: absolute;
+  top: -33px;
+  left: -33px;
+  border-radius: 50%;
+  height: 60px;
+  width: 60px;
+  border: 3px solid rgba(32, 204, 255, 0.8);
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+}
+
+#stage .interaction .touch-overlay.multi .fill-1, #stage .interaction .touch-overlay.multi .fill-2 {
+  position: absolute;
+  top: -21px;
+  left: -21px;
+  border-radius: 50%;
   height: 40px;
   width: 40px;
-  border: 2px solid #f00;
+}
+
+#stage .interaction .touch-overlay.multi .fill-1 {
+  background-color: rgba(32, 204, 255, 0.4);
+  border: 1px solid rgba(32, 204, 255, 1);
+  box-shadow: inset 0px 0px 10px rgba(32, 204, 255, 0.7), 0px 0px 10px rgba(32, 204, 255, 0.7);
+}
+
+#stage .interaction .touch-overlay.multi .fill-2 {
+  background-color: rgba(0, 233, 81, 0.4);
+  border: 1px solid rgba(0, 233, 81, 1);
+  box-shadow: inset 0px 0px 10px rgba(0, 233, 81, 0.7), 0px 0px 10px rgba(0, 233, 81, 0.7);
+}
+
+#stage .interaction .touch-overlay.multi .crosshairs-1 .line::before, #stage .interaction .touch-overlay.multi .crosshairs-1 .line::after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: -40px;
+  left: 0;
+  height: 20px;
+  width: 0;
+  border-left: 1px solid rgba(32, 204, 255, 0.4);
+}
+
+#stage .interaction .touch-overlay.multi .crosshairs-1 .line::before {
+  top: -40px;
+}
+
+#stage .interaction .touch-overlay.multi .crosshairs-1 .line::after {
+  top: 20px;
+}
+
+#stage .interaction .touch-overlay.multi .crosshairs-2 .line::before, #stage .interaction .touch-overlay.multi .crosshairs-2 .line::after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: -40px;
+  left: 0;
+  height: 15px;
+  width: 0;
+  border-left: 3px solid rgba(32, 204, 255, 0.7);
+}
+
+#stage .interaction .touch-overlay.multi .crosshairs-2 .line::before {
+  top: -40px;
+}
+
+#stage .interaction .touch-overlay.multi .crosshairs-2 .line::after {
+  top: 25px;
+}
+
+#stage .interaction .touch-overlay.multi .crosshairs .line.r90 {
+  transform: rotate(90deg);
+}
+
+#stage .interaction .touch-overlay.multi .crosshairs .line.r45 {
+  transform: rotate(45deg);
+}
+
+#stage .interaction .touch-overlay.multi .crosshairs .line.r135 {
+  transform: rotate(135deg);
+}
+
+#stage .interaction .touch-overlay.multi .rotate-1 {
+  animation-name: spin;
+  animation-duration: 5000ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+#stage .interaction .touch-overlay.multi .rotate-2 {
+  animation-name: spin-backwards;
+  animation-duration: 2000ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+#stage .interaction .touch-overlay.multi .rotate-3 {
+  animation-name: spin-backwards;
+  animation-duration: 10000ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+@keyframes spin {
+    from {transform:rotate(0deg);}
+    to {transform:rotate(360deg);}
+}
+
+@keyframes spin-backwards {
+    from {transform:rotate(0deg);}
+    to {transform:rotate(-360deg);}
+}
+
+@keyframes spin-weird {
+    0% {transform:rotate(0deg), scale(1);}
+    10% {transform:rotate(0deg), scale(1);}
+    30% {transform:rotate(360deg), scale(1.3);}
+    90% {transform:rotate(180deg), scale(1.3);}
+    100% {transform:rotate(0deg), scale(1);}
 }

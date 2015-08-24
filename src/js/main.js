@@ -157,10 +157,9 @@ $(document).ready(function(){
   redraw();
 
   $(window).on("touchstart", function(e){
-    console.log(e.originalEvent.changedTouches);
     for(var i =0; i < e.originalEvent.changedTouches.length; i++){
       var _touch = e.originalEvent.changedTouches[i];
-      var $touch_point = touch_overlay_templates["multi-0"].clone();
+      var $touch_point = touch_overlay_templates["multi-" + (_touch.identifier % 5)].clone();
       $touch_point.appendTo($interaction);
       $touch_point.css({
         top: _touch.clientY,
@@ -196,7 +195,7 @@ $(document).ready(function(){
     // cleanup everything
     if(e.originalEvent.touches.length === 0){
       _touch_state.touches = {};
-      $interaction.html();
+      $interaction.html('');
     }
     e.preventDefault();
   });
