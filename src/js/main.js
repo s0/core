@@ -249,7 +249,12 @@ $(document).ready(function(){
     // cleanup everything
     if(e.originalEvent.touches.length === 0){
       _touch_state.touches.clear();
-      //$touch_overlays.html('');
+      $touch_overlays.children().each(function(){
+        close_and_delete($(this));
+      });
+      $lock_underlays.children().each(function(){
+        close_and_delete($(this));
+      });
       if(_lock_state.state === ENUMS.LOCK_STATE.TOUCH_POINTS)
         show_unlock_dialog();
     }
