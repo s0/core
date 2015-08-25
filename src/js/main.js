@@ -4,6 +4,17 @@ $(document).ready(function(){
   var HEX_WIDTH = 150;
   var HEX_HEIGHT = Math.sqrt(3)/2 * HEX_WIDTH | 0;
 
+  var ENUMS = {
+    MODE: {
+      LOCKED: 0
+    },
+    LOCK_STATE: {
+      NONE: 0,
+      TOUCH_POINTS: 1,
+      DIALOG: 2
+    }
+  }
+
   // cached number values
   var _x_step = HEX_WIDTH / 4 * 3 | 0;
   var _y_step = HEX_HEIGHT / 2 | 0;
@@ -11,9 +22,16 @@ $(document).ready(function(){
   var _quater_w = HEX_WIDTH / 4 | 0;
   var _half_h = HEX_HEIGHT / 2 | 0;
 
-  var _mode = "locked";
-  var _lock_overlay_open = false;
+  var _mode = ENUMS.MODE.LOCKED;
+  var _lock_state = {
+    state: ENUMS.LOCK_STATE.NONE,
+    dialog: null,
+    x: 0,
+    y: 0
+  }
 
+  var $templates = $('#templates');
+  var $lock_dialog_template = $templates.children('.lock-dialog:first');
   var $stage = $('#stage');
   var $hex_background = $stage.children('.hex-background:first');
   var $interaction = $stage.children('.interaction:first');
@@ -28,7 +46,7 @@ $(document).ready(function(){
   }
 
   // Collect Templates
-  $('#templates .touch-overlays:first').children().each(function(){
+  $templates.children('.touch-overlays:first').children().each(function(){
     var $this = $(this);
     touch_overlay_templates[$this.data('overlay')] = $this;
   });
@@ -179,9 +197,9 @@ $(document).ready(function(){
     for(var i =0; i < e.originalEvent.changedTouches.length; i++){
       var _touch = e.originalEvent.changedTouches[i];
 
-      if(_mode === "locked"){
+      if(_mode === ENUMS.MODE.LOCKED){
 
-        if(!_lock_overlay_open){
+        if(_lock_state.state === ENUMS.LOCK_STATE.NONE){
           // Maximum 5
           if(_touch_state.touches.size >= 5)
             return;
@@ -189,10 +207,14 @@ $(document).ready(function(){
           add_touch_with_overlay(_touch, "multi-2");
 
           if(_touch_state.touches.size === 5){
-            initialise_unlock_dialog();
+            show_unlock_overlay_points();
           }
-        } else {
-          // Overlay for unlock
+        } if(_lock_state.state === ENUMS.LOCK_STATE.DIALOG) {
+          // check if touch is outside element (to close)
+          var $inner = _lock_state.dialog.children('.inner:first');
+          if(!is_over(_touch, $inner)){
+            close_unlock_dialog();
+          }
         }
       }
     }
@@ -202,9 +224,10 @@ $(document).ready(function(){
       var _touch = e.originalEvent.changedTouches[i];
       var _t = _touch_state.touches.get(_touch.identifier);
       if(_t === undefined)
-        return;
+        continue;
       _t.touch = _touch;
       if(_t.has_overlay){
+        set_position_to_touch(_t.overlay, _touch);
         _t.overlay.css({
           top: _touch.clientY,
           left: _touch.clientX
@@ -217,16 +240,18 @@ $(document).ready(function(){
       var _touch = e.originalEvent.changedTouches[i];
       var _t = _touch_state.touches.get(_touch.identifier);
       if(_t === undefined)
-        return;
+        continue;
       if(_t.has_overlay){
-        _t.overlay.remove();
+        close_and_delete(_t.overlay);
       }
       _touch_state.touches.delete(_touch.identifier);
     }
     // cleanup everything
     if(e.originalEvent.touches.length === 0){
       _touch_state.touches.clear();
-      $touch_overlays.html('');
+      //$touch_overlays.html('');
+      if(_lock_state.state === ENUMS.LOCK_STATE.TOUCH_POINTS)
+        show_unlock_dialog();
     }
     e.preventDefault();
   });
@@ -234,10 +259,7 @@ $(document).ready(function(){
   function add_touch_with_overlay(touch, template){
     var $touch_point = touch_overlay_templates[template].clone();
     $touch_point.appendTo($touch_overlays);
-    $touch_point.css({
-      top: touch.clientY,
-      left: touch.clientX
-    });
+    set_position_to_touch($touch_point, touch);
     _touch_state.touches.set(touch.identifier, {
       touch: touch,
       has_overlay: true,
@@ -245,9 +267,9 @@ $(document).ready(function(){
     });
   }
 
-  function initialise_unlock_dialog(){
+  function show_unlock_overlay_points(){
     // Check not already open
-    if(_lock_overlay_open)
+    if(_lock_state.state !== ENUMS.LOCK_STATE.NONE)
       return;
 
     // Check decent layout
@@ -263,7 +285,7 @@ $(document).ready(function(){
         _min_x = _x;
       if(_max_x === null || _x > _max_x)
         _max_x = _x;
-      if(_min_y === null || _y< _min_y)
+      if(_min_y === null || _y < _min_y)
         _min_y = _y;
       if(_max_y === null || _y > _max_y)
         _max_y = _y;
@@ -273,17 +295,72 @@ $(document).ready(function(){
       // Bad placement
       return;
 
-    // Open Overlay
-    _lock_overlay_open = true;
+    // Show Overlay Points
+    _lock_state.state = ENUMS.LOCK_STATE.TOUCH_POINTS;
+    _lock_state.x = (_min_x + _max_x) / 2;
+    _lock_state.y = (_min_y + _max_y) / 2;
 
+    _lock_state.touch_points = [];
     _touch_state.touches.forEach(function(t){
+      // replace overlay with lock-finger
+      close_and_delete(t.overlay);
       var $touch_point = touch_overlay_templates["lock-finger"].clone();
       $touch_point.appendTo($lock_underlays);
-      $touch_point.css({
-        top: t.touch.clientY,
-        left: t.touch.clientX
-      });
+      set_position_to_touch($touch_point, t.touch);
+      t.overlay = $touch_point;
     });
+  }
+
+  function show_unlock_dialog(){
+    if(_lock_state.state === ENUMS.LOCK_STATE.DIALOG)
+      return;
+
+    _lock_state.state = ENUMS.LOCK_STATE.DIALOG
+
+    _lock_state.dialog = $lock_dialog_template.clone();
+    _lock_state.dialog.appendTo($interaction);
+    _lock_state.dialog.css({
+      top: _lock_state.y,
+      left: _lock_state.x
+    });
+  }
+
+  function close_unlock_dialog(){
+    if(_lock_state.state !== ENUMS.LOCK_STATE.DIALOG)
+      return;
+
+    _lock_state.state = ENUMS.LOCK_STATE.NONE;
+    close_and_delete(_lock_state.dialog);
+    _lock_state.dialog = null;
+  }
+
+  function set_position_to_touch($elem, touch){
+    $elem.css({
+      top: touch.clientY,
+      left: touch.clientX
+    });
+  }
+
+  function close_and_delete($elem){
+    $elem.addClass('close');
+    setTimeout(function(){
+      $elem.remove();
+    }, 1000);
+  }
+
+  function is_over(touch, $elem, padding){
+    if(padding === undefined)
+      padding = 0;
+
+    var _offset = $elem.offset();
+    var _w = $elem.outerWidth();
+    var _h = $elem.outerHeight();
+
+    return (
+      touch.clientX >= _offset.left - padding &&
+      touch.clientX <= _offset.left + _w + padding &&
+      touch.clientY >= _offset.top - padding &&
+      touch.clientY <= _offset.top + _h + padding);
   }
 
 
