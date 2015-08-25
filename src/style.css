@@ -3,6 +3,39 @@
     src: url(fonts/tr2n/Tr2n.ttf);
 }
 
+@keyframes spin {
+    from {transform:rotate(0deg);}
+    to {transform:rotate(360deg);}
+}
+
+@keyframes spin-backwards {
+    from {transform:rotate(0deg);}
+    to {transform:rotate(-360deg);}
+}
+
+@keyframes lock-finger-show {
+    0% {
+      transform: scale(0.5);
+      opacity: 0;
+      background-color: rgba(255, 255, 255, 0);
+      }
+    10% {
+      transform: scale(1);
+      opacity: 0.4;
+      background-color: rgba(255, 255, 255, 0);
+      }
+    30% {
+      transform: scale(1);
+      opacity: 1;
+      background-color: rgba(255, 255, 255, 0);
+      }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+      background-color: rgba(255, 255, 255, 0.1);
+      }
+}
+
 body {
   background-color: #000a0d;
   margin: 0;
@@ -99,7 +132,7 @@ polygon.hex-polygon.pad:hover {
   width: 0;
 }
 
-#stage .interaction .touch-overlay.multi .ring-1 {
+#stage .interaction .touch-overlay .ring-1 {
   position: absolute;
   top: -42px;
   left: -42px;
@@ -109,7 +142,7 @@ polygon.hex-polygon.pad:hover {
   border: 2px solid rgba(32, 204, 255, 0.5);
 }
 
-#stage .interaction .touch-overlay.multi .ring-2 {
+#stage .interaction .touch-overlay .ring-2 {
   position: absolute;
   top: -35px;
   left: -35px;
@@ -120,7 +153,7 @@ polygon.hex-polygon.pad:hover {
   box-shadow: inset 0px 0px 10px rgba(32, 204, 255, 0.7), 0px 0px 10px rgba(32, 204, 255, 0.7);
 }
 
-#stage .interaction .touch-overlay.multi .ring-3 {
+#stage .interaction .touch-overlay .ring-3 {
   position: absolute;
   top: -63px;
   left: -63px;
@@ -131,7 +164,7 @@ polygon.hex-polygon.pad:hover {
   box-shadow: inset 0px 0px 10px rgba(0, 233, 81, 0.7), 0px 0px 10px rgba(0, 233, 81, 0.7);
 }
 
-#stage .interaction .touch-overlay.multi .arcs-1 {
+#stage .interaction .touch-overlay .arcs-1 {
   position: absolute;
   top: -56px;
   left: -56px;
@@ -143,7 +176,7 @@ polygon.hex-polygon.pad:hover {
   border-bottom-color: transparent;
 }
 
-#stage .interaction .touch-overlay.multi .arcs-2 {
+#stage .interaction .touch-overlay .arcs-2 {
   position: absolute;
   top: -33px;
   left: -33px;
@@ -155,7 +188,7 @@ polygon.hex-polygon.pad:hover {
   border-bottom-color: transparent;
 }
 
-#stage .interaction .touch-overlay.multi .fill-1, #stage .interaction .touch-overlay.multi .fill-2 {
+#stage .interaction .touch-overlay .fill-1, #stage .interaction .touch-overlay .fill-2 {
   position: absolute;
   top: -21px;
   left: -21px;
@@ -164,19 +197,19 @@ polygon.hex-polygon.pad:hover {
   width: 40px;
 }
 
-#stage .interaction .touch-overlay.multi .fill-1 {
+#stage .interaction .touch-overlay .fill-1 {
   background-color: rgba(32, 204, 255, 0.4);
   border: 1px solid rgba(32, 204, 255, 1);
   box-shadow: inset 0px 0px 10px rgba(32, 204, 255, 0.7), 0px 0px 10px rgba(32, 204, 255, 0.7);
 }
 
-#stage .interaction .touch-overlay.multi .fill-2 {
+#stage .interaction .touch-overlay .fill-2 {
   background-color: rgba(0, 233, 81, 0.4);
   border: 1px solid rgba(0, 233, 81, 1);
   box-shadow: inset 0px 0px 10px rgba(0, 233, 81, 0.7), 0px 0px 10px rgba(0, 233, 81, 0.7);
 }
 
-#stage .interaction .touch-overlay.multi .crosshairs-1 .line::before, #stage .interaction .touch-overlay.multi .crosshairs-1 .line::after {
+#stage .interaction .touch-overlay .crosshairs-1 .line::before, #stage .interaction .touch-overlay .crosshairs-1 .line::after {
   content: '';
   display: block;
   position: absolute;
@@ -187,15 +220,15 @@ polygon.hex-polygon.pad:hover {
   border-left: 1px solid rgba(32, 204, 255, 0.4);
 }
 
-#stage .interaction .touch-overlay.multi .crosshairs-1 .line::before {
+#stage .interaction .touch-overlay .crosshairs-1 .line::before {
   top: -40px;
 }
 
-#stage .interaction .touch-overlay.multi .crosshairs-1 .line::after {
+#stage .interaction .touch-overlay .crosshairs-1 .line::after {
   top: 20px;
 }
 
-#stage .interaction .touch-overlay.multi .crosshairs-2 .line::before, #stage .interaction .touch-overlay.multi .crosshairs-2 .line::after {
+#stage .interaction .touch-overlay .crosshairs-2 .line::before, #stage .interaction .touch-overlay .crosshairs-2 .line::after {
   content: '';
   display: block;
   position: absolute;
@@ -206,61 +239,65 @@ polygon.hex-polygon.pad:hover {
   border-left: 3px solid rgba(32, 204, 255, 0.7);
 }
 
-#stage .interaction .touch-overlay.multi .crosshairs-2 .line::before {
+#stage .interaction .touch-overlay .crosshairs-2 .line::before {
   top: -40px;
 }
 
-#stage .interaction .touch-overlay.multi .crosshairs-2 .line::after {
+#stage .interaction .touch-overlay .crosshairs-2 .line::after {
   top: 25px;
 }
 
-#stage .interaction .touch-overlay.multi .crosshairs .line.r90 {
+#stage .interaction .touch-overlay .crosshairs .line.r90 {
   transform: rotate(90deg);
 }
 
-#stage .interaction .touch-overlay.multi .crosshairs .line.r45 {
+#stage .interaction .touch-overlay .crosshairs .line.r45 {
   transform: rotate(45deg);
 }
 
-#stage .interaction .touch-overlay.multi .crosshairs .line.r135 {
+#stage .interaction .touch-overlay .crosshairs .line.r135 {
   transform: rotate(135deg);
 }
 
-#stage .interaction .touch-overlay.multi .rotate-1 {
+#stage .interaction .touch-overlay .rotate-1 {
   animation-name: spin;
   animation-duration: 5000ms;
   animation-iteration-count: infinite;
   animation-timing-function: linear;
 }
 
-#stage .interaction .touch-overlay.multi .rotate-2 {
+#stage .interaction .touch-overlay .rotate-2 {
   animation-name: spin-backwards;
   animation-duration: 2000ms;
   animation-iteration-count: infinite;
   animation-timing-function: linear;
 }
 
-#stage .interaction .touch-overlay.multi .rotate-3 {
+#stage .interaction .touch-overlay .rotate-3 {
   animation-name: spin-backwards;
   animation-duration: 10000ms;
   animation-iteration-count: infinite;
   animation-timing-function: linear;
 }
 
-@keyframes spin {
-    from {transform:rotate(0deg);}
-    to {transform:rotate(360deg);}
+#stage .interaction .touch-overlay.lock-finger .circle {
+  position: absolute;
+  top: -53px;
+  left: -53px;
+  border-radius: 50%;
+  height: 100px;
+  width: 100px;
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0px 0px 10px rgba(255, 255, 255, 0.7), 0px 0px 10px rgba(255, 255, 255, 0.7);
+  background-color: rgba(255, 255, 255, 0.1);
+  animation-name: lock-finger-show;
+  animation-duration: 1500ms;
+  animation-iteration-count: 1;
+  animation-timing-function: linear;
 }
 
-@keyframes spin-backwards {
-    from {transform:rotate(0deg);}
-    to {transform:rotate(-360deg);}
-}
-
-@keyframes spin-weird {
-    0% {transform:rotate(0deg), scale(1);}
-    10% {transform:rotate(0deg), scale(1);}
-    30% {transform:rotate(360deg), scale(1.3);}
-    90% {transform:rotate(180deg), scale(1.3);}
-    100% {transform:rotate(0deg), scale(1);}
+#stage .interaction .touch-overlay.lock-finger .arcs-2 {
+  border-color: rgba(255, 255, 255, 0.8);
+  border-top-color: transparent;
+  border-bottom-color: transparent;
 }

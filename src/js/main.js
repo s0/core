@@ -11,15 +11,20 @@ $(document).ready(function(){
   var _quater_w = HEX_WIDTH / 4 | 0;
   var _half_h = HEX_HEIGHT / 2 | 0;
 
+  var _mode = "locked";
+  var _lock_overlay_open = false;
+
   var $stage = $('#stage');
   var $hex_background = $stage.children('.hex-background:first');
   var $interaction = $stage.children('.interaction:first');
+  var $touch_overlays = $interaction.children('.touch-overlays:first');
+  var $lock_underlays = $interaction.children('.lock-underlays:first');
   var $clock_text = $('.clock .text');
 
   var touch_overlay_templates = {};
 
   var _touch_state = {
-    touches: {}
+    touches: new Map()
   }
 
   // Collect Templates
@@ -173,22 +178,32 @@ $(document).ready(function(){
   $(window).on("touchstart", function(e){
     for(var i =0; i < e.originalEvent.changedTouches.length; i++){
       var _touch = e.originalEvent.changedTouches[i];
-      var $touch_point = touch_overlay_templates["multi-" + (_touch.identifier % 5)].clone();
-      $touch_point.appendTo($interaction);
-      $touch_point.css({
-        top: _touch.clientY,
-        left: _touch.clientX
-      });
-      _touch_state.touches[_touch.identifier] = {
-        has_overlay: true,
-        overlay: $touch_point
-      };
+
+      if(_mode === "locked"){
+
+        if(!_lock_overlay_open){
+          // Maximum 5
+          if(_touch_state.touches.size >= 5)
+            return;
+
+          add_touch_with_overlay(_touch, "multi-2");
+
+          if(_touch_state.touches.size === 5){
+            initialise_unlock_dialog();
+          }
+        } else {
+          // Overlay for unlock
+        }
+      }
     }
     e.preventDefault();
   }).on("touchmove", function(e){
     for(var i =0; i < e.originalEvent.changedTouches.length; i++){
       var _touch = e.originalEvent.changedTouches[i];
-      var _t = _touch_state.touches[_touch.identifier];
+      var _t = _touch_state.touches.get(_touch.identifier);
+      if(_t === undefined)
+        return;
+      _t.touch = _touch;
       if(_t.has_overlay){
         _t.overlay.css({
           top: _touch.clientY,
@@ -200,21 +215,76 @@ $(document).ready(function(){
   }).on("touchend", function(e){
     for(var i =0; i < e.originalEvent.changedTouches.length; i++){
       var _touch = e.originalEvent.changedTouches[i];
-      var _t = _touch_state.touches[_touch.identifier];
+      var _t = _touch_state.touches.get(_touch.identifier);
+      if(_t === undefined)
+        return;
       if(_t.has_overlay){
         _t.overlay.remove();
       }
-      delete _touch_state.touches[_touch.identifier];
+      _touch_state.touches.delete(_touch.identifier);
     }
     // cleanup everything
     if(e.originalEvent.touches.length === 0){
-      _touch_state.touches = {};
-      $interaction.html('');
+      _touch_state.touches.clear();
+      $touch_overlays.html('');
     }
     e.preventDefault();
   });
 
+  function add_touch_with_overlay(touch, template){
+    var $touch_point = touch_overlay_templates[template].clone();
+    $touch_point.appendTo($touch_overlays);
+    $touch_point.css({
+      top: touch.clientY,
+      left: touch.clientX
+    });
+    _touch_state.touches.set(touch.identifier, {
+      touch: touch,
+      has_overlay: true,
+      overlay: $touch_point
+    });
+  }
 
+  function initialise_unlock_dialog(){
+    // Check not already open
+    if(_lock_overlay_open)
+      return;
+
+    // Check decent layout
+    var _min_x = null;
+    var _max_x = null;
+    var _min_y = null;
+    var _max_y = null;
+
+    _touch_state.touches.forEach(function(t){
+      var _x = t.touch.clientX;
+      var _y = t.touch.clientY;
+      if(_min_x === null || _x < _min_x)
+        _min_x = _x;
+      if(_max_x === null || _x > _max_x)
+        _max_x = _x;
+      if(_min_y === null || _y< _min_y)
+        _min_y = _y;
+      if(_max_y === null || _y > _max_y)
+        _max_y = _y;
+    });
+
+    if(_max_y - _min_y < 250 || _max_y - _min_y > 900 || _max_x - _min_x < 250 || _max_x - _min_x > 900)
+      // Bad placement
+      return;
+
+    // Open Overlay
+    _lock_overlay_open = true;
+
+    _touch_state.touches.forEach(function(t){
+      var $touch_point = touch_overlay_templates["lock-finger"].clone();
+      $touch_point.appendTo($lock_underlays);
+      $touch_point.css({
+        top: t.touch.clientY,
+        left: t.touch.clientX
+      });
+    });
+  }
 
 
 });
