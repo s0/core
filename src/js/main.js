@@ -14,6 +14,7 @@ $(document).ready(function(){
   var $stage = $('#stage');
   var $hex_background = $stage.children('.hex-background:first');
   var $interaction = $stage.children('.interaction:first');
+  var $clock_text = $('.clock .text');
 
   var touch_overlay_templates = {};
 
@@ -26,6 +27,19 @@ $(document).ready(function(){
     var $this = $(this);
     touch_overlay_templates[$this.data('overlay')] = $this;
   });
+
+  // Write time to clocks
+  function update_clocks(){
+    var _now = new Date();
+    var _time = [_now.getHours(), _now.getMinutes(), _now.getSeconds()];
+    for (var i = 1; i < 3; i++) {
+      if (_time[i] < 10)
+        _time[i] = "0" + _time[i];
+    }
+    $clock_text.text(_time.join(':'));
+  }
+  setInterval(update_clocks, 100);
+  update_clocks();
 
   function redraw(){
 
@@ -199,6 +213,8 @@ $(document).ready(function(){
     }
     e.preventDefault();
   });
+
+
 
 
 });
