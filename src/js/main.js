@@ -1,4 +1,4 @@
-$(document).ready(function(){
+require([], function(){
 
   var SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
   var HEX_WIDTH = 150;
@@ -30,14 +30,14 @@ $(document).ready(function(){
     y: 0
   }
 
-  var $templates = $('#templates');
-  var $lock_dialog_template = $templates.children('.lock-dialog:first');
-  var $stage = $('#stage');
-  var $hex_background = $stage.children('.hex-background:first');
-  var $interaction = $stage.children('.interaction:first');
-  var $touch_overlays = $interaction.children('.touch-overlays:first');
-  var $lock_underlays = $interaction.children('.lock-underlays:first');
-  var $clock_text = $('.clock .text');
+  var $templates,
+      $lock_dialog_template,
+      $stage,
+      $hex_background,
+      $interaction,
+      $touch_overlays,
+      $lock_underlays,
+      $clock_text;
 
   var touch_overlay_templates = {};
 
@@ -45,10 +45,100 @@ $(document).ready(function(){
     touches: new Map()
   }
 
-  // Collect Templates
-  $templates.children('.touch-overlays:first').children().each(function(){
-    var $this = $(this);
-    touch_overlay_templates[$this.data('overlay')] = $this;
+  $(document).ready(function(){
+
+    $templates = $('#templates');
+    $lock_dialog_template = $templates.children('.lock-dialog:first');
+    $stage = $('#stage');
+    $hex_background = $stage.children('.hex-background:first');
+    $interaction = $stage.children('.interaction:first');
+    $touch_overlays = $interaction.children('.touch-overlays:first');
+    $lock_underlays = $interaction.children('.lock-underlays:first');
+    $clock_text = $('.clock .text');
+
+    // Collect Templates
+    $templates.children('.touch-overlays:first').children().each(function(){
+      var $this = $(this);
+      touch_overlay_templates[$this.data('overlay')] = $this;
+    });
+
+    // Start clocks
+    setInterval(update_clocks, 100);
+    update_clocks();
+
+    $(window).resize(redraw);
+    redraw();
+
+    $(window).on("touchstart", function(e){
+      for(var i =0; i < e.originalEvent.changedTouches.length; i++){
+        var _touch = e.originalEvent.changedTouches[i];
+
+        if(_mode === ENUMS.MODE.LOCKED){
+
+          if(_lock_state.state === ENUMS.LOCK_STATE.DIALOG) {
+            // check if touch is outside element (to close)
+            var $inner = _lock_state.dialog.children('.inner:first');
+            if(!is_over(_touch, $inner)){
+              close_unlock_dialog();
+            }
+          }
+
+          if(_lock_state.state === ENUMS.LOCK_STATE.NONE){
+            // Maximum 5
+            if(_touch_state.touches.size >= 5)
+              return;
+
+            add_touch_with_overlay(_touch, "multi-2");
+
+            if(_touch_state.touches.size === 5){
+              show_unlock_overlay_points();
+            }
+          }
+        }
+      }
+      e.preventDefault();
+    }).on("touchmove", function(e){
+      for(var i =0; i < e.originalEvent.changedTouches.length; i++){
+        var _touch = e.originalEvent.changedTouches[i];
+        var _t = _touch_state.touches.get(_touch.identifier);
+        if(_t === undefined)
+          continue;
+        _t.touch = _touch;
+        if(_t.has_overlay){
+          set_position_to_touch(_t.overlay, _touch);
+          _t.overlay.css({
+            top: _touch.clientY,
+            left: _touch.clientX
+          });
+        }
+        e.preventDefault();
+      }
+    }).on("touchend", function(e){
+      for(var i =0; i < e.originalEvent.changedTouches.length; i++){
+        var _touch = e.originalEvent.changedTouches[i];
+        var _t = _touch_state.touches.get(_touch.identifier);
+        if(_t === undefined)
+          continue;
+        if(_t.has_overlay){
+          close_and_delete(_t.overlay);
+        }
+        _touch_state.touches.delete(_touch.identifier);
+      }
+      // cleanup everything
+      if(e.originalEvent.touches.length === 0){
+        _touch_state.touches.clear();
+        $touch_overlays.children().each(function(){
+          close_and_delete($(this));
+        });
+        $lock_underlays.children().each(function(){
+          close_and_delete($(this));
+        });
+        if(_lock_state.state === ENUMS.LOCK_STATE.TOUCH_POINTS)
+          show_unlock_dialog();
+      }
+      e.preventDefault();
+    });
+
   });
 
   // Write time to clocks
@@ -61,8 +151,6 @@ $(document).ready(function(){
     }
     $clock_text.text(_time.join(':'));
   }
-  setInterval(update_clocks, 100);
-  update_clocks();
 
   function redraw(){
 
@@ -189,79 +277,6 @@ $(document).ready(function(){
   function clear(){
     $hex_background.html('');
   }
-
-  $(window).resize(redraw);
-  redraw();
-
-  $(window).on("touchstart", function(e){
-    for(var i =0; i < e.originalEvent.changedTouches.length; i++){
-      var _touch = e.originalEvent.changedTouches[i];
-
-      if(_mode === ENUMS.MODE.LOCKED){
-
-        if(_lock_state.state === ENUMS.LOCK_STATE.DIALOG) {
-          // check if touch is outside element (to close)
-          var $inner = _lock_state.dialog.children('.inner:first');
-          if(!is_over(_touch, $inner)){
-            close_unlock_dialog();
-          }
-        }
-
-        if(_lock_state.state === ENUMS.LOCK_STATE.NONE){
-          // Maximum 5
-          if(_touch_state.touches.size >= 5)
-            return;
-
-          add_touch_with_overlay(_touch, "multi-2");
-
-          if(_touch_state.touches.size === 5){
-            show_unlock_overlay_points();
-          }
-        }
-      }
-    }
-    e.preventDefault();
-  }).on("touchmove", function(e){
-    for(var i =0; i < e.originalEvent.changedTouches.length; i++){
-      var _touch = e.originalEvent.changedTouches[i];
-      var _t = _touch_state.touches.get(_touch.identifier);
-      if(_t === undefined)
-        continue;
-      _t.touch = _touch;
-      if(_t.has_overlay){
-        set_position_to_touch(_t.overlay, _touch);
-        _t.overlay.css({
-          top: _touch.clientY,
-          left: _touch.clientX
-        });
-      }
-      e.preventDefault();
-    }
-  }).on("touchend", function(e){
-    for(var i =0; i < e.originalEvent.changedTouches.length; i++){
-      var _touch = e.originalEvent.changedTouches[i];
-      var _t = _touch_state.touches.get(_touch.identifier);
-      if(_t === undefined)
-        continue;
-      if(_t.has_overlay){
-        close_and_delete(_t.overlay);
-      }
-      _touch_state.touches.delete(_touch.identifier);
-    }
-    // cleanup everything
-    if(e.originalEvent.touches.length === 0){
-      _touch_state.touches.clear();
-      $touch_overlays.children().each(function(){
-        close_and_delete($(this));
-      });
-      $lock_underlays.children().each(function(){
-        close_and_delete($(this));
-      });
-      if(_lock_state.state === ENUMS.LOCK_STATE.TOUCH_POINTS)
-        show_unlock_dialog();
-    }
-    e.preventDefault();
-  });
 
   function add_touch_with_overlay(touch, template){
     var $touch_point = touch_overlay_templates[template].clone();
