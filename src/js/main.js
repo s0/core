@@ -199,6 +199,14 @@ $(document).ready(function(){
 
       if(_mode === ENUMS.MODE.LOCKED){
 
+        if(_lock_state.state === ENUMS.LOCK_STATE.DIALOG) {
+          // check if touch is outside element (to close)
+          var $inner = _lock_state.dialog.children('.inner:first');
+          if(!is_over(_touch, $inner)){
+            close_unlock_dialog();
+          }
+        }
+
         if(_lock_state.state === ENUMS.LOCK_STATE.NONE){
           // Maximum 5
           if(_touch_state.touches.size >= 5)
@@ -208,12 +216,6 @@ $(document).ready(function(){
 
           if(_touch_state.touches.size === 5){
             show_unlock_overlay_points();
-          }
-        } if(_lock_state.state === ENUMS.LOCK_STATE.DIALOG) {
-          // check if touch is outside element (to close)
-          var $inner = _lock_state.dialog.children('.inner:first');
-          if(!is_over(_touch, $inner)){
-            close_unlock_dialog();
           }
         }
       }
