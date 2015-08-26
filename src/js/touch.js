@@ -80,8 +80,12 @@ define(["constants", "lock", "util"], function(C, lock, util){
       _elems.lock_underlays.children().each(function(){
         util.close_and_delete($(this));
       });
+    }
+    // Perform actions on 0 active touches
+    if(_state.touch.touches.size === 0){
       if(lock.state.state === C.ENUMS.LOCK_STATE.TOUCH_POINTS)
         lock.show_unlock_dialog();
+
     }
     e.preventDefault();
   }
