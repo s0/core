@@ -30,14 +30,16 @@ require([], function(){
     y: 0
   }
 
-  var $templates,
-      $lock_dialog_template,
-      $stage,
-      $hex_background,
-      $interaction,
-      $touch_overlays,
-      $lock_underlays,
-      $clock_text;
+  var elems = {
+    templates: null,
+    lock_dialog_template: null,
+    stage: null,
+    hex_background: null,
+    interaction: null,
+    touch_overlays: null,
+    lock_underlays: null,
+    clock_text: null
+  };
 
   var touch_overlay_templates = {};
 
@@ -47,17 +49,17 @@ require([], function(){
 
   $(document).ready(function(){
 
-    $templates = $('#templates');
-    $lock_dialog_template = $templates.children('.lock-dialog:first');
-    $stage = $('#stage');
-    $hex_background = $stage.children('.hex-background:first');
-    $interaction = $stage.children('.interaction:first');
-    $touch_overlays = $interaction.children('.touch-overlays:first');
-    $lock_underlays = $interaction.children('.lock-underlays:first');
-    $clock_text = $('.clock .text');
+    elems.templates = $('#templates');
+    elems.lock_dialog_template = elems.templates.children('.lock-dialog:first');
+    elems.stage = $('#stage');
+    elems.hex_background = elems.stage.children('.hex-background:first');
+    elems.interaction = elems.stage.children('.interaction:first');
+    elems.touch_overlays = elems.interaction.children('.touch-overlays:first');
+    elems.lock_underlays = elems.interaction.children('.lock-underlays:first');
+    elems.clock_text = $('.clock .text');
 
     // Collect Templates
-    $templates.children('.touch-overlays:first').children().each(function(){
+    elems.templates.children('.touch-overlays:first').children().each(function(){
       var $this = $(this);
       touch_overlay_templates[$this.data('overlay')] = $this;
     });
@@ -127,10 +129,10 @@ require([], function(){
       // cleanup everything
       if(e.originalEvent.touches.length === 0){
         _touch_state.touches.clear();
-        $touch_overlays.children().each(function(){
+        elems.touch_overlays.children().each(function(){
           close_and_delete($(this));
         });
-        $lock_underlays.children().each(function(){
+        elems.lock_underlays.children().each(function(){
           close_and_delete($(this));
         });
         if(_lock_state.state === ENUMS.LOCK_STATE.TOUCH_POINTS)
@@ -149,7 +151,7 @@ require([], function(){
       if (_time[i] < 10)
         _time[i] = "0" + _time[i];
     }
-    $clock_text.text(_time.join(':'));
+    elems.clock_text.text(_time.join(':'));
   }
 
   function redraw(){
@@ -157,8 +159,8 @@ require([], function(){
     clear();
 
     // alculate Values
-    var _stage_width = $stage.width();
-    var _stage_height = $stage.height();
+    var _stage_width = elems.stage.width();
+    var _stage_height = elems.stage.height();
     var _centre_x = _stage_width / 2 | 0;
     var _centre_y = _stage_height / 2 | 0;
     var _left_pad = [];
@@ -266,7 +268,7 @@ require([], function(){
     $polygon.attr('class', _class);
     $polygon.attr('points', _points);
 
-    $hex_background.append($polygon);
+    elems.hex_background.append($polygon);
     return $polygon;
   }
 
@@ -275,12 +277,12 @@ require([], function(){
   }
 
   function clear(){
-    $hex_background.html('');
+    elems.hex_background.html('');
   }
 
   function add_touch_with_overlay(touch, template){
     var $touch_point = touch_overlay_templates[template].clone();
-    $touch_point.appendTo($touch_overlays);
+    $touch_point.appendTo(elems.touch_overlays);
     set_position_to_touch($touch_point, touch);
     _touch_state.touches.set(touch.identifier, {
       touch: touch,
@@ -327,7 +329,7 @@ require([], function(){
       // replace overlay with lock-finger
       close_and_delete(t.overlay);
       var $touch_point = touch_overlay_templates["lock-finger"].clone();
-      $touch_point.appendTo($lock_underlays);
+      $touch_point.appendTo(elems.lock_underlays);
       set_position_to_touch($touch_point, t.touch);
       t.overlay = $touch_point;
     });
@@ -339,8 +341,8 @@ require([], function(){
 
     _lock_state.state = ENUMS.LOCK_STATE.DIALOG
 
-    _lock_state.dialog = $lock_dialog_template.clone();
-    _lock_state.dialog.appendTo($interaction);
+    _lock_state.dialog = elems.lock_dialog_template.clone();
+    _lock_state.dialog.appendTo(elems.interaction);
     _lock_state.dialog.css({
       top: _lock_state.y,
       left: _lock_state.x
