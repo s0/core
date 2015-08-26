@@ -1,30 +1,15 @@
-require([], function(){
-
-  var SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
-  var HEX_WIDTH = 150;
-  var HEX_HEIGHT = Math.sqrt(3)/2 * HEX_WIDTH | 0;
-
-  var ENUMS = {
-    MODE: {
-      LOCKED: 0
-    },
-    LOCK_STATE: {
-      NONE: 0,
-      TOUCH_POINTS: 1,
-      DIALOG: 2
-    }
-  }
+require(['constants'], function(C){
 
   // cached number values
-  var _x_step = HEX_WIDTH / 4 * 3 | 0;
-  var _y_step = HEX_HEIGHT / 2 | 0;
-  var _half_w = HEX_WIDTH / 2 | 0;
-  var _quater_w = HEX_WIDTH / 4 | 0;
-  var _half_h = HEX_HEIGHT / 2 | 0;
+  var _x_step = C.HEX_WIDTH / 4 * 3 | 0;
+  var _y_step = C.HEX_HEIGHT / 2 | 0;
+  var _half_w = C.HEX_WIDTH / 2 | 0;
+  var _quater_w = C.HEX_WIDTH / 4 | 0;
+  var _half_h = C.HEX_HEIGHT / 2 | 0;
 
-  var _mode = ENUMS.MODE.LOCKED;
+  var _mode = C.ENUMS.MODE.LOCKED;
   var _lock_state = {
-    state: ENUMS.LOCK_STATE.NONE,
+    state: C.ENUMS.LOCK_STATE.NONE,
     dialog: null,
     x: 0,
     y: 0
@@ -75,9 +60,9 @@ require([], function(){
       for(var i =0; i < e.originalEvent.changedTouches.length; i++){
         var _touch = e.originalEvent.changedTouches[i];
 
-        if(_mode === ENUMS.MODE.LOCKED){
+        if(_mode === C.ENUMS.MODE.LOCKED){
 
-          if(_lock_state.state === ENUMS.LOCK_STATE.DIALOG) {
+          if(_lock_state.state === C.ENUMS.LOCK_STATE.DIALOG) {
             // check if touch is outside element (to close)
             var $inner = _lock_state.dialog.children('.inner:first');
             if(!is_over(_touch, $inner)){
@@ -85,7 +70,7 @@ require([], function(){
             }
           }
 
-          if(_lock_state.state === ENUMS.LOCK_STATE.NONE){
+          if(_lock_state.state === C.ENUMS.LOCK_STATE.NONE){
             // Maximum 5
             if(_touch_state.touches.size >= 5)
               return;
@@ -135,7 +120,7 @@ require([], function(){
         elems.lock_underlays.children().each(function(){
           close_and_delete($(this));
         });
-        if(_lock_state.state === ENUMS.LOCK_STATE.TOUCH_POINTS)
+        if(_lock_state.state === C.ENUMS.LOCK_STATE.TOUCH_POINTS)
           show_unlock_dialog();
       }
       e.preventDefault();
@@ -203,7 +188,7 @@ require([], function(){
       var _pad_q = q;
       var _pad_r = r - 2;
       var _switched = false;
-      if(compute_offset(_pad_q, _pad_r).y > _stage_height - HEX_HEIGHT){
+      if(compute_offset(_pad_q, _pad_r).y > _stage_height - C.HEX_HEIGHT){
         _pad_q ++;
         _pad_r --;
         _switched = true;
@@ -225,7 +210,7 @@ require([], function(){
     function compute_offset(q, r){
       return {
         x: _centre_x + q * _x_step,
-        y: _centre_y + q * _y_step + r * HEX_HEIGHT
+        y: _centre_y + q * _y_step + r * C.HEX_HEIGHT
       };
     }
 
@@ -273,7 +258,7 @@ require([], function(){
   }
 
   function createNSElem(tag){
-    return document.createElementNS(SVG_NAMESPACE, tag);
+    return document.createElementNS(C.SVG_NAMESPACE, tag);
   }
 
   function clear(){
@@ -293,7 +278,7 @@ require([], function(){
 
   function show_unlock_overlay_points(){
     // Check not already open
-    if(_lock_state.state !== ENUMS.LOCK_STATE.NONE)
+    if(_lock_state.state !== C.ENUMS.LOCK_STATE.NONE)
       return;
 
     // Check decent layout
@@ -320,7 +305,7 @@ require([], function(){
       return;
 
     // Show Overlay Points
-    _lock_state.state = ENUMS.LOCK_STATE.TOUCH_POINTS;
+    _lock_state.state = C.ENUMS.LOCK_STATE.TOUCH_POINTS;
     _lock_state.x = (_min_x + _max_x) / 2;
     _lock_state.y = (_min_y + _max_y) / 2;
 
@@ -336,10 +321,10 @@ require([], function(){
   }
 
   function show_unlock_dialog(){
-    if(_lock_state.state === ENUMS.LOCK_STATE.DIALOG)
+    if(_lock_state.state === C.ENUMS.LOCK_STATE.DIALOG)
       return;
 
-    _lock_state.state = ENUMS.LOCK_STATE.DIALOG
+    _lock_state.state = C.ENUMS.LOCK_STATE.DIALOG
 
     _lock_state.dialog = elems.lock_dialog_template.clone();
     _lock_state.dialog.appendTo(elems.interaction);
@@ -350,10 +335,10 @@ require([], function(){
   }
 
   function close_unlock_dialog(){
-    if(_lock_state.state !== ENUMS.LOCK_STATE.DIALOG)
+    if(_lock_state.state !== C.ENUMS.LOCK_STATE.DIALOG)
       return;
 
-    _lock_state.state = ENUMS.LOCK_STATE.NONE;
+    _lock_state.state = C.ENUMS.LOCK_STATE.NONE;
     close_and_delete(_lock_state.dialog);
     _lock_state.dialog = null;
   }
