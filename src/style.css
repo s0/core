@@ -23,6 +23,15 @@
     to {transform:scale(1); opacity: 1;}
 }
 
+@keyframes show-spin {
+    from {transform:scale(0.5) rotate(-150deg); opacity: 0;}
+    to {transform:scale(1) rotate(0deg); opacity: 1;}
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   background-color: #000a0d;
   margin: 0;
@@ -124,8 +133,8 @@ polygon.hex-polygon.pad:hover {
   top: -42px;
   left: -42px;
   border-radius: 50%;
-  height: 80px;
-  width: 80px;
+  height: 84px;
+  width: 84px;
   border: 2px solid rgba(32, 204, 255, 0.5);
 }
 
@@ -134,8 +143,8 @@ polygon.hex-polygon.pad:hover {
   top: -35px;
   left: -35px;
   border-radius: 50%;
-  height: 60px;
-  width: 60px;
+  height: 70px;
+  width: 70px;
   border: 5px solid rgba(32, 204, 255, 1);
   box-shadow: inset 0px 0px 10px rgba(32, 204, 255, 0.7), 0px 0px 10px rgba(32, 204, 255, 0.7);
 }
@@ -145,8 +154,8 @@ polygon.hex-polygon.pad:hover {
   top: -63px;
   left: -63px;
   border-radius: 50%;
-  height: 120px;
-  width: 120px;
+  height: 126px;
+  width: 126px;
   border: 3px solid rgba(0, 233, 81, 1);
   box-shadow: inset 0px 0px 10px rgba(0, 233, 81, 0.7), 0px 0px 10px rgba(0, 233, 81, 0.7);
 }
@@ -156,8 +165,8 @@ polygon.hex-polygon.pad:hover {
   top: -56px;
   left: -56px;
   border-radius: 50%;
-  height: 100px;
-  width: 100px;
+  height: 112px;
+  width: 112px;
   border: 6px solid rgba(32, 204, 255, 0.5);
   border-top-color: transparent;
   border-bottom-color: transparent;
@@ -168,8 +177,8 @@ polygon.hex-polygon.pad:hover {
   top: -33px;
   left: -33px;
   border-radius: 50%;
-  height: 60px;
-  width: 60px;
+  height: 66px;
+  width: 66px;
   border: 3px solid rgba(32, 204, 255, 0.8);
   border-top-color: transparent;
   border-bottom-color: transparent;
@@ -272,8 +281,8 @@ polygon.hex-polygon.pad:hover {
   top: -53px;
   left: -53px;
   border-radius: 50%;
-  height: 100px;
-  width: 100px;
+  height: 106px;
+  width: 106px;
   border: 3px solid rgba(255, 255, 255, 0.5);
   box-shadow: inset 0px 0px 10px rgba(255, 255, 255, 0.4), 0px 0px 10px rgba(255, 255, 255, 0.4);
   background-color: rgba(255, 255, 255, 0.1);
@@ -289,25 +298,59 @@ polygon.hex-polygon.pad:hover {
   border-bottom-color: transparent;
 }
 
-#stage .interaction .lock-dialog {
+#stage .interaction .combination-lock {
   position: absolute;
-
-}
-
-#stage .interaction .lock-dialog .inner {
-  position: absolute;
-  top: -153px;
-  left: -153px;
-  height: 300px;
-  width: 300px;
-  border-radius: 20%;
-  border: 3px solid rgba(255, 255, 255, 0.8);
-  box-shadow: inset 0px 0px 10px rgba(255, 255, 255, 0.7), 0px 0px 10px rgba(255, 255, 255, 0.7);
-  background-color: rgba(255, 255, 255, 0.2);
   animation-name: show;
   animation-duration: 600ms;
   animation-iteration-count: 1;
   animation-timing-function: ease;
+}
+
+#stage .interaction .combination-lock .ring-1 {
+  position: absolute;
+  top: -150px;
+  left: -150px;
+  height: 300px;
+  width: 300px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0px 0px 10px rgba(255, 255, 255, 0.7), 0px 0px 10px rgba(255, 255, 255, 0.7);
+}
+
+#stage .interaction .combination-lock .segments-1 {
+  animation-name: show-spin;
+  animation-duration: 900ms;
+  animation-iteration-count: 1;
+  animation-timing-function: ease;
+}
+
+#stage .interaction .combination-lock .segments-1 .segment {
+  position: absolute;
+  top: -120px;
+  left: 0;
+  overflow: hidden;
+  transform-origin: 0 50%;
+}
+
+#stage .interaction .combination-lock .segments-1 .segment .inner {
+  transform: rotate(40deg);
+  transform-origin: 50% 50%;
+  height: 240px;
+  width: 240px;
+  margin-left: -50%;
+}
+
+#stage .interaction .combination-lock .segments-1 .segment .inner::before {
+  content: "";
+  display: block;
+  box-sizing: border-box;
+  height: 100%;
+  width: 100%;
+  border-radius: 50%;
+  border: 20px solid rgba(255, 255, 255, 0.3);
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  transform: rotate(-45deg);
 }
 
 #stage .close {

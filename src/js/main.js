@@ -24,7 +24,6 @@ require(['clocks', 'constants', 'lock', 'stage', 'touch', 'util'], function(cloc
 
     // Collect Elements
     _elems.templates = $('#templates');
-    _elems.lock_dialog_template = _elems.templates.children('.lock-dialog:first');
     _elems.stage = $('#stage');
     _elems.hex_background = _elems.stage.children('.hex-background:first');
     _elems.interaction = _elems.stage.children('.interaction:first');
