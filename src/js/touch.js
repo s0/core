@@ -19,11 +19,8 @@ define(["constants", "lock", "util"], function(C, lock, util){
       if(_state.mode === C.ENUMS.MODE.LOCKED){
 
         if(lock.state.state === C.ENUMS.LOCK_STATE.DIALOG) {
-          // check if touch is outside element (to close)
-          var $inner = lock.state.dialog.children('.inner:first');
-          if(!util.is_over(_touch, $inner)){
-            lock.close_unlock_dialog();
-          }
+          // Start interacting with combination lock
+
         }
 
         if(lock.state.state === C.ENUMS.LOCK_STATE.NONE){

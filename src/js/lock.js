@@ -1,4 +1,4 @@
-define(['constants', 'util'], function(C, util){
+define(['constants', 'util', 'widgets/combination_lock'], function(C, util, lock_widget){
 
   var _state,
       _elems;
@@ -66,12 +66,9 @@ define(['constants', 'util'], function(C, util){
 
     _lock_state.state = C.ENUMS.LOCK_STATE.DIALOG
 
-    _lock_state.dialog = _elems.lock_dialog_template.clone();
-    _lock_state.dialog.appendTo(_elems.interaction);
-    _lock_state.dialog.css({
-      top: _lock_state.y,
-      left: _lock_state.x
-    });
+    _lock_state.widget = lock_widget.create();
+
+    _lock_state.widget.attach(_elems.interaction, _lock_state.x, _lock_state.y);
   }
 
   function close_unlock_dialog(){
@@ -79,8 +76,8 @@ define(['constants', 'util'], function(C, util){
       return;
 
     _lock_state.state = C.ENUMS.LOCK_STATE.NONE;
-    util.close_and_delete(_lock_state.dialog);
-    _lock_state.dialog = null;
+    _lock_state.widget.del();
+    _lock_state.widget = null;
   }
 
   return {
