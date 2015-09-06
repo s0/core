@@ -67,6 +67,7 @@ define(["constants", "lock", "util"], function(C, lock, util){
         util.close_and_delete(_t.overlay);
       }
       _state.touch.touches.delete(_touch.identifier);
+      _state.touch.last_touches.set(_touch.identifier, _touch);
     }
     // cleanup everything
     if(e.originalEvent.touches.length === 0){

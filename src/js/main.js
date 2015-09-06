@@ -3,7 +3,8 @@ require(['clocks', 'constants', 'lock', 'stage', 'touch', 'util'], function(cloc
   var _state = {
     mode: C.ENUMS.MODE.LOCKED,
     touch: {
-      touches: new Map()
+      touches: new Map(),
+      last_touches: new Map()
     }
   };
 

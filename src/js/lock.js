@@ -22,32 +22,21 @@ define(['constants', 'util', 'widgets/combination_lock'], function(C, util, lock
       return;
 
     // Check decent layout
-    var _min_x = null;
-    var _max_x = null;
-    var _min_y = null;
-    var _max_y = null;
+    var _bounds = util.compute_coordinate_bounds(
+      _state.touch.touches,
+      function(t){
+        return {x: t.touch.clientX, y: t.touch.clientY}
+      });
 
-    _state.touch.touches.forEach(function(t){
-      var _x = t.touch.clientX;
-      var _y = t.touch.clientY;
-      if(_min_x === null || _x < _min_x)
-        _min_x = _x;
-      if(_max_x === null || _x > _max_x)
-        _max_x = _x;
-      if(_min_y === null || _y < _min_y)
-        _min_y = _y;
-      if(_max_y === null || _y > _max_y)
-        _max_y = _y;
-    });
-
-    if(_max_y - _min_y < 250 || _max_y - _min_y > 900 || _max_x - _min_x < 250 || _max_x - _min_x > 900)
+    if(_bounds.max_y - _bounds.min_y < 250 ||
+       _bounds.max_y - _bounds.min_y > 900 ||
+       _bounds.max_x - _bounds.min_x < 250 ||
+       _bounds.max_x - _bounds.min_x > 900)
       // Bad placement
       return;
 
     // Show Overlay Points
     _lock_state.state = C.ENUMS.LOCK_STATE.TOUCH_POINTS;
-    _lock_state.x = (_min_x + _max_x) / 2;
-    _lock_state.y = (_min_y + _max_y) / 2;
 
     _lock_state.touch_points = [];
     _state.touch.touches.forEach(function(t){
@@ -68,7 +57,16 @@ define(['constants', 'util', 'widgets/combination_lock'], function(C, util, lock
 
     _lock_state.widget = lock_widget.create();
 
-    _lock_state.widget.attach(_elems.interaction, _lock_state.x, _lock_state.y);
+    var _bounds = util.compute_coordinate_bounds(
+      _state.touch.last_touches,
+      function(t){
+        return {x: t.clientX, y: t.clientY}
+      });
+
+    var _x = (_bounds.min_x + _bounds.max_x) / 2;
+    var _y = (_bounds.min_y + _bounds.max_y) / 2;
+
+    _lock_state.widget.attach(_elems.interaction, _x, _y);
   }
 
   function close_unlock_dialog(){
