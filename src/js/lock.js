@@ -82,6 +82,8 @@ define(['audio', 'constants', 'util', 'widgets/combination_lock'], function(audi
     if(_lock_state.state !== C.ENUMS.LOCK_STATE.DIALOG)
       return;
 
+    audio.play("close1");
+
     _lock_state.state = C.ENUMS.LOCK_STATE.NONE;
     _lock_state.widget.del();
     _lock_state.widget = null;

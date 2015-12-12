@@ -6,7 +6,9 @@ define([], function(){
     beep3: audio_pool("audio/freesound/220206__gameaudio__beep-space-button.wav", 5, 0.6, 0),
 
     ready1: audio_pool("audio/freesound/220172__gameaudio__flourish-spacey-2.wav", 1, 0.6, 0),
-    ready2: audio_pool("audio/lcars/201.wav", 1, 0.2, 0)
+    ready2: audio_pool("audio/lcars/201.wav", 1, 0.2, 0),
+
+    close1: audio_pool("audio/freesound/264763__farpro__guiclick2.ogg", 1, 0.6, 0),
   };
 
   function play(sound){
