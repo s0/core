@@ -354,9 +354,9 @@ polygon.hex-polygon.pad:hover {
 }
 
 #stage .close {
-  transform: scale(0);
-  animation-name: close;
-  animation-duration: 600ms;
-  animation-iteration-count: 1;
-  animation-timing-function: ease;
+  transform: scale(0) !important;
+  animation-name: close !important;
+  animation-duration: 600ms !important;
+  animation-iteration-count: 1 !important;
+  animation-timing-function: ease !important;
 }

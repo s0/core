@@ -1,7 +1,8 @@
 define(['audio', 'constants', 'util', 'widgets/combination_lock'], function(audio, C, util, lock_widget){
 
   var _state,
-      _elems;
+      _elems,
+      _close_dialog_timeout;
 
   var _lock_state = {
     state: C.ENUMS.LOCK_STATE.NONE,
@@ -70,6 +71,11 @@ define(['audio', 'constants', 'util', 'widgets/combination_lock'], function(audi
     var _y = (_bounds.min_y + _bounds.max_y) / 2;
 
     _lock_state.widget.attach(_elems.interaction, _x, _y);
+
+    _close_dialog_timeout = setTimeout(function(){
+      if(_lock_state.state === C.ENUMS.LOCK_STATE.DIALOG)
+        close_unlock_dialog();
+    }, 5000);
   }
 
   function close_unlock_dialog(){
