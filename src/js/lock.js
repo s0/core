@@ -72,10 +72,12 @@ define(['audio', 'constants', 'util', 'widgets/combination_lock'], function(audi
 
     _lock_state.widget.attach(_elems.interaction, _x, _y);
 
-    _close_dialog_timeout = setTimeout(function(){
-      if(_lock_state.state === C.ENUMS.LOCK_STATE.DIALOG)
-        close_unlock_dialog();
-    }, 5000);
+    if(C.COMBINATION_LOCK.TIMEOUT !== null){
+      _close_dialog_timeout = setTimeout(function(){
+        if(_lock_state.state === C.ENUMS.LOCK_STATE.DIALOG)
+          close_unlock_dialog();
+      }, C.COMBINATION_LOCK.TIMEOUT);
+    }
   }
 
   function close_unlock_dialog(){
