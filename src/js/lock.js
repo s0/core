@@ -11,7 +11,8 @@ define(['audio', 'constants', 'util', 'widgets/combination_lock'], function(audi
     y: 0,
     last_touch_x: 0,
     last_touch_y: 0,
-    input: ''
+    input: '',
+    last_move: null
   }
 
   function init(state, elems){
@@ -108,6 +109,7 @@ define(['audio', 'constants', 'util', 'widgets/combination_lock'], function(audi
       _lock_state.last_touch_x = touch.clientX;
       _lock_state.last_touch_y = touch.clientY;
       _lock_state.input = '';
+      _lock_state.last_move = null;
     } else {
       // Touched outside of lock
       close_unlock_dialog();
@@ -119,19 +121,20 @@ define(['audio', 'constants', 'util', 'widgets/combination_lock'], function(audi
     var _diff_y = _lock_state.last_touch_y - touch.clientY;
     var _move_amt = C.COMBINATION_LOCK.MOVE_AMNT;
     var _move = null;
-    if(_diff_x < -_move_amt){
+    if(_diff_x < -_move_amt && _lock_state.last_move !== 'r'){
       _move = 'r';
-    } else if(_diff_x > _move_amt){
+    } else if(_diff_x > _move_amt && _lock_state.last_move !== 'l'){
       _move = 'l';
-    } else if(_diff_y < -_move_amt){
+    } else if(_diff_y < -_move_amt && _lock_state.last_move !== 'd'){
       _move = 'd';
-    } else if(_diff_y > _move_amt){
+    } else if(_diff_y > _move_amt && _lock_state.last_move !== 'u'){
       _move = 'u';
     }
     if(_move === null)
       return;
     // A move has been made
     _lock_state.input += _move;
+    _lock_state.last_move = _move;
     _lock_state.last_touch_x = touch.clientX;
     _lock_state.last_touch_y = touch.clientY;
     _lock_state.widget.animate(_move);

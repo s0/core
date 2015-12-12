@@ -8,7 +8,7 @@ define([], function(){
     SEGMENTS: 10,
     SEGMENTS_SPACING: 5, // in degrees
     TIMEOUT: null,
-    MOVE_AMNT: 60
+    MOVE_AMNT: 20
   };
 
   var ENUMS = {
