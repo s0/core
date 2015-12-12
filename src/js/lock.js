@@ -1,4 +1,4 @@
-define(['constants', 'util', 'widgets/combination_lock'], function(C, util, lock_widget){
+define(['audio', 'constants', 'util', 'widgets/combination_lock'], function(audio, C, util, lock_widget){
 
   var _state,
       _elems;
@@ -36,6 +36,7 @@ define(['constants', 'util', 'widgets/combination_lock'], function(C, util, lock
       return;
 
     // Show Overlay Points
+    audio.play("ready1");
     _lock_state.state = C.ENUMS.LOCK_STATE.TOUCH_POINTS;
 
     _lock_state.touch_points = [];
@@ -52,6 +53,8 @@ define(['constants', 'util', 'widgets/combination_lock'], function(C, util, lock
   function show_unlock_dialog(){
     if(_lock_state.state === C.ENUMS.LOCK_STATE.DIALOG)
       return;
+
+    audio.play("ready2");
 
     _lock_state.state = C.ENUMS.LOCK_STATE.DIALOG
 

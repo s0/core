@@ -1,4 +1,4 @@
-define(["constants", "lock", "util"], function(C, lock, util){
+define(["audio", "constants", "lock", "util"], function(audio, C, lock, util){
 
   var _state,
       _elems;
@@ -32,6 +32,8 @@ define(["constants", "lock", "util"], function(C, lock, util){
 
           if(_state.touch.touches.size === 5){
             lock.show_unlock_overlay_points();
+          } else {
+            audio.play("beep2");
           }
         }
       }
