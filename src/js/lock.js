@@ -8,14 +8,16 @@ define(['audio', 'constants', 'util', 'widgets/combination_lock'], function(audi
     state: C.ENUMS.LOCK_STATE.NONE,
     dialog: null,
     x: 0,
-    y: 0
+    y: 0,
+    last_touch_x: 0,
+    last_touch_y: 0,
+    input: ''
   }
 
   function init(state, elems){
     _state = state;
     _elems = elems;
   }
-
 
   function show_unlock_overlay_points(){
     // Check not already open
@@ -81,7 +83,8 @@ define(['audio', 'constants', 'util', 'widgets/combination_lock'], function(audi
   }
 
   function close_unlock_dialog(){
-    if(_lock_state.state !== C.ENUMS.LOCK_STATE.DIALOG)
+    if(_lock_state.state !== C.ENUMS.LOCK_STATE.DIALOG &&
+       _lock_state.state !== C.ENUMS.LOCK_STATE.INPUTTING)
       return;
 
     audio.play("close1");
@@ -91,12 +94,64 @@ define(['audio', 'constants', 'util', 'widgets/combination_lock'], function(audi
     _lock_state.widget = null;
   }
 
+  function lock_touch_started(touch){
+    if(_lock_state.state !== C.ENUMS.LOCK_STATE.DIALOG)
+      return;
+
+    if(_lock_state.widget.activate_touch_area(touch)){
+      _lock_state.state = C.ENUMS.LOCK_STATE.INPUTTING;
+      audio.play("beep1");
+      _state.touch.touches.set(touch.identifier, {
+        touch: touch,
+        is_lock_input: true
+      });
+      _lock_state.last_touch_x = touch.clientX;
+      _lock_state.last_touch_y = touch.clientY;
+      _lock_state.input = '';
+    } else {
+      // Touched outside of lock
+      close_unlock_dialog();
+    }
+  }
+
+  function lock_touch_moved(touch){
+    var _diff_x = _lock_state.last_touch_x - touch.clientX;
+    var _diff_y = _lock_state.last_touch_y - touch.clientY;
+    var _move_amt = C.COMBINATION_LOCK.MOVE_AMNT;
+    var _move = null;
+    if(_diff_x < -_move_amt){
+      _move = 'r';
+    } else if(_diff_x > _move_amt){
+      _move = 'l';
+    } else if(_diff_y < -_move_amt){
+      _move = 'd';
+    } else if(_diff_y > _move_amt){
+      _move = 'u';
+    }
+    if(_move === null)
+      return;
+    // A move has been made
+    _lock_state.input += _move;
+    _lock_state.last_touch_x = touch.clientX;
+    _lock_state.last_touch_y = touch.clientY;
+    _lock_state.widget.animate(_move);
+    audio.play("beep1");
+  }
+
+  function lock_touch_stopped(){
+    // Check if lock code is correct
+    close_unlock_dialog();
+  }
+
   return {
     state: _lock_state,
     init: init,
     show_unlock_overlay_points: show_unlock_overlay_points,
     show_unlock_dialog: show_unlock_dialog,
-    close_unlock_dialog: close_unlock_dialog
+    close_unlock_dialog: close_unlock_dialog,
+    lock_touch_started: lock_touch_started,
+    lock_touch_moved: lock_touch_moved,
+    lock_touch_stopped: lock_touch_stopped
   }
 
 });

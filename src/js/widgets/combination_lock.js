@@ -4,9 +4,10 @@ define(['constants', 'util'], function(C, util){
 
     var $lock = $('#templates .combination-lock:first').clone();
     var $segments = $lock.find('.segments-1:first');
-    var $segment_one = $segments.children().first();
+    var $input = $lock.find('.input:first');
+    var _angle = 0;
 
-    create_segments($lock.find('.segments-1:first'), C.COMBINATION_LOCK.SEGMENTS, C.COMBINATION_LOCK.SEGMENTS_SPACING)
+    create_segments($segments, C.COMBINATION_LOCK.SEGMENTS, C.COMBINATION_LOCK.SEGMENTS_SPACING)
 
     function attach($elem, x, y){
       $lock.appendTo($elem);
@@ -18,6 +19,31 @@ define(['constants', 'util'], function(C, util){
 
     function del(){
       util.close_and_delete($lock);
+    }
+
+    // Return true if the given touch is in the "touch" area
+    function activate_touch_area(touch){
+      if(util.is_over(touch, $input, 0)){
+        $input.addClass('show');
+        $lock.addClass('inputting');
+        return true;
+      }
+      return false;
+    }
+
+    function animate(move){
+      var _step = 360 / C.COMBINATION_LOCK.SEGMENTS;
+      switch(move){
+        case "u":
+        case "l":
+          _angle -= _step;
+          break;
+        case "d":
+        case "r":
+          _angle += _step;
+          break;
+      }
+      $segments.css("transform", "rotate(" + _angle + "deg)");
     }
 
     function create_segments($parent, num_segments, spacing){
@@ -40,7 +66,9 @@ define(['constants', 'util'], function(C, util){
 
     return {
       attach: attach,
-      del: del
+      del: del,
+      activate_touch_area: activate_touch_area,
+      animate: animate
     };
 
   }

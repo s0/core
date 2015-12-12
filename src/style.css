@@ -317,11 +317,37 @@ polygon.hex-polygon.pad:hover {
   box-shadow: inset 0px 0px 10px rgba(255, 255, 255, 0.7), 0px 0px 10px rgba(255, 255, 255, 0.7);
 }
 
+#stage .interaction .combination-lock.inputting .ring-1 {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+#stage .interaction .combination-lock .input {
+  position: absolute;
+  top: -75px;
+  left: -75px;
+  height: 150px;
+  width: 150px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0px 0px 10px rgba(255, 255, 255, 0.7), 0px 0px 10px rgba(255, 255, 255, 0.7);
+  background-color: rgba(255, 255, 255, 0.1);
+  opacity: 0;
+}
+
+#stage .interaction .combination-lock .input.show {
+  opacity: 1;
+  animation-name: show;
+  animation-duration: 300ms;
+  animation-iteration-count: 1;
+  animation-timing-function: ease;
+}
+
 #stage .interaction .combination-lock .segments-1 {
   animation-name: show-spin;
   animation-duration: 900ms;
   animation-iteration-count: 1;
   animation-timing-function: ease;
+  transition: transform 0.3s;
 }
 
 #stage .interaction .combination-lock .segments-1 .segment {
@@ -351,6 +377,12 @@ polygon.hex-polygon.pad:hover {
   border-right-color: transparent;
   border-bottom-color: transparent;
   transform: rotate(-45deg);
+}
+
+#stage .interaction .combination-lock.inputting .segments-1 .segment .inner::before {
+  border-color: rgba(32, 204, 255, 0.7);
+  border-right-color: transparent;
+  border-bottom-color: transparent;
 }
 
 #stage .close {

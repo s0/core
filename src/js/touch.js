@@ -18,11 +18,6 @@ define(["audio", "constants", "lock", "util"], function(audio, C, lock, util){
 
       if(_state.mode === C.ENUMS.MODE.LOCKED){
 
-        if(lock.state.state === C.ENUMS.LOCK_STATE.DIALOG) {
-          // Start interacting with combination lock
-
-        }
-
         if(lock.state.state === C.ENUMS.LOCK_STATE.NONE){
           // Maximum 5
           if(_state.touch.touches.size >= 5)
@@ -35,6 +30,11 @@ define(["audio", "constants", "lock", "util"], function(audio, C, lock, util){
           } else {
             audio.play("beep2");
           }
+        }
+
+        if(lock.state.state === C.ENUMS.LOCK_STATE.DIALOG) {
+          // Start interacting with combination lock
+          lock.lock_touch_started(_touch);
         }
       }
     }
@@ -55,6 +55,9 @@ define(["audio", "constants", "lock", "util"], function(audio, C, lock, util){
           left: _touch.clientX
         });
       }
+      if(_t.is_lock_input){
+        lock.lock_touch_moved(_touch);
+      }
       e.preventDefault();
     }
   }
@@ -67,6 +70,9 @@ define(["audio", "constants", "lock", "util"], function(audio, C, lock, util){
         continue;
       if(_t.has_overlay){
         util.close_and_delete(_t.overlay);
+      }
+      if(_t.is_lock_input){
+        lock.lock_touch_stopped();
       }
       _state.touch.touches.delete(_touch.identifier);
       _state.touch.last_touches.set(_touch.identifier, _touch);

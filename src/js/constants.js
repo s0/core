@@ -7,7 +7,8 @@ define([], function(){
   var COMBINATION_LOCK = {
     SEGMENTS: 10,
     SEGMENTS_SPACING: 5, // in degrees
-    TIMEOUT: 5000
+    TIMEOUT: null,
+    MOVE_AMNT: 60
   };
 
   var ENUMS = {
@@ -17,7 +18,8 @@ define([], function(){
     LOCK_STATE: {
       NONE: 0,
       TOUCH_POINTS: 1,
-      DIALOG: 2
+      DIALOG: 2,
+      INPUTTING: 3
     }
   }
 
