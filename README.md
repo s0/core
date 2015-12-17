@@ -1,4 +1,4 @@
-# Touch Dashboard
+# CORE
 
 This is just a small project to play around with some experimental UI stuff on
 large form factor (~23 inch) touch screen devices in Chrome/Chromium.
