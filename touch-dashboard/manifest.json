@@ -1,0 +1,14 @@
+{
+  "name": "Touch Dashboard (For Core)",
+  "description": "The touch user interface for core.",
+  "version": "0.1",
+  "manifest_version": 2,
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "icons": {
+
+  }
+}
