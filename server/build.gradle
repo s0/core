@@ -15,6 +15,7 @@ repositories {
 }
 
 dependencies {
+	compile group: 'net.thejavashop', name: 'javampd', version:'5.0.3'
 }
 
 sourceSets {
