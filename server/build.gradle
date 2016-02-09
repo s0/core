@@ -16,6 +16,7 @@ repositories {
 
 dependencies {
 	compile group: 'net.thejavashop', name: 'javampd', version:'5.0.3'
+    compile group: 'org.yaml', name: 'snakeyaml', version:'1.15'
 }
 
 sourceSets {

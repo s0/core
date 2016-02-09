@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.samlanning.core.server.util.Listenable;
+import com.samlanning.core.server.util.Logging;
 
 /**
  * Monitor MPD for state changes
@@ -19,8 +20,7 @@ import com.samlanning.core.server.util.Listenable;
  */
 public class MPDMonitor extends Listenable<MPDMonitor.Listener> {
 
-    private static final Logger logger = LoggerFactory.getLogger(MPDMonitor.class
-        .getCanonicalName());
+    private static final Logger logger = Logging.logger(MPDMonitor.class);
 
     private final MPD mpd;
 
