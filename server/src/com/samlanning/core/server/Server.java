@@ -17,6 +17,7 @@ import ch.qos.logback.classic.Logger;
 import com.samlanning.core.server.config.ConfigurationException;
 import com.samlanning.core.server.config.ServerConfig;
 import com.samlanning.core.server.mpd.MPDMonitor;
+import com.samlanning.core.server.transports.WebSocketTransport;
 import com.samlanning.core.server.util.Logging;
 
 public class Server {
@@ -71,6 +72,13 @@ public class Server {
                 }
             });
 
+        }
+
+        // Setup Websocket
+        {
+            WebSocketTransport webSocket =
+                new WebSocketTransport(config.websocketHost(), config.websocketPort());
+            webSocket.start();
         }
 
     }

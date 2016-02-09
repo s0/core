@@ -11,6 +11,9 @@ public class ServerConfig {
     private final String mpdHost;
     private final int mpdPort;
 
+    private final String websocketHost;
+    private final int websocketPort;
+
     public ServerConfig(InputStream configFile) throws ConfigurationException {
         Yaml yaml = new Yaml();
         Object configData;
@@ -29,27 +32,48 @@ public class ServerConfig {
 
         // MPD Config
         {
-            Object mpd = configRoot.get("mpd");
-            if (mpd instanceof Map) {
-                Map<?, ?> mpdConfig = (Map<?, ?>) mpd;
-                this.mpdHost = getRequiredString(mpdConfig, "host", "mpd host");
-                this.mpdPort = getPort(mpdConfig, "port", -1, "mpd port");
-            } else {
-                throw new ConfigurationException("mpd is not a map");
-            }
+
+            Map<?, ?> mpdConfig = getRequiredMap(configRoot, "mpd", "mpd");
+            this.mpdHost = getRequiredString(mpdConfig, "host", "mpd host");
+            this.mpdPort = getPort(mpdConfig, "port", -1, "mpd port");
+        }
+
+        // WebSocket Config
+        {
+            Map<?, ?> websocketConfig = getRequiredMap(configRoot, "websocket", "websocket");
+            this.websocketHost = getRequiredString(websocketConfig, "host", "websocket host");
+            this.websocketPort = getPort(websocketConfig, "port", null, "websocket port");
+        }
+    }
+
+    private Map<?, ?> getRequiredMap(Map<?, ?> map, String key, String configIdentifier)
+        throws ConfigurationException {
+        Object object = map.get(key);
+        if (object == null) {
+            throw new ConfigurationException("missing required config: " + configIdentifier);
+        } else if (object instanceof Map) {
+            return (Map<?, ?>) object;
+        } else {
+            throw new ConfigurationException(configIdentifier + " is not a map");
         }
     }
 
     private static String getRequiredString(Map<?, ?> map, String key, String configIdentifier)
         throws ConfigurationException {
         Object object = map.get(key);
-        if (object instanceof String) {
+        if (object == null) {
+            throw new ConfigurationException("missing required config: " + configIdentifier);
+        } else if (object instanceof String) {
             return (String) object;
         } else {
             throw new ConfigurationException("invalid " + configIdentifier);
         }
     }
 
+    /**
+     * @param defaultValue - null if config is required, otherwise the value to
+     *            default to.
+     */
     private static int getPort(Map<?, ?> map, String key, Integer defaultValue,
         String configIdentifier) throws ConfigurationException {
         Object object = map.get(key);
@@ -67,7 +91,7 @@ public class ServerConfig {
         } else if (defaultValue != null) {
             return defaultValue.intValue();
         } else {
-            throw new ConfigurationException("missing required " + configIdentifier);
+            throw new ConfigurationException("missing required config: " + configIdentifier);
         }
 
     }
@@ -81,13 +105,11 @@ public class ServerConfig {
     }
 
     public String websocketHost() {
-        // TODO Auto-generated method stub
-        return null;
+        return websocketHost;
     }
 
     public int websocketPort() {
-        // TODO Auto-generated method stub
-        return 0;
+        return websocketPort;
     }
 
 }
