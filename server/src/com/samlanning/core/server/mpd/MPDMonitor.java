@@ -5,7 +5,6 @@ import org.bff.javampd.Player;
 import org.bff.javampd.Player.Status;
 import org.bff.javampd.exception.MPDPlayerException;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.samlanning.core.server.util.Listenable;
 import com.samlanning.core.server.util.Logging;
@@ -60,7 +59,7 @@ public class MPDMonitor extends Listenable<MPDMonitor.Listener> {
                 try {
                     Status lastStatus = status;
                     status = player.getStatus();
-                    if (status != lastStatus){
+                    if (status != lastStatus) {
                         MPDMonitor.this.updateNewListenerVisitor(l -> l.statusChanged(status));
                         MPDMonitor.this.visitListeners(l -> l.statusChanged(status));
                     }
