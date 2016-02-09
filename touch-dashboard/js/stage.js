@@ -32,11 +32,6 @@ define(['constants', 'util'], function(C, util){
 
       fill_screen_with_hexagons();
 
-      // Draw left pad
-      _left_pad.forEach(function(props){
-        draw_hexagon(props, "pad");
-      });
-
     })();
 
     function fill_screen_with_hexagons(){
@@ -54,34 +49,7 @@ define(['constants', 'util'], function(C, util){
             for(var _r = _min_r; compute_offset(_q, _r).y < _stage_height + _half_h; _r++)
               draw_hexagon_as_required(_q, _r);
 
-            if(_q === _min_q + 3 ){
-              add_pad_area(_q, _r);
-            }
-
         }
-    }
-
-    function add_pad_area(q, r){
-      var _pad_q = q;
-      var _pad_r = r - 2;
-      var _switched = false;
-      if(compute_offset(_pad_q, _pad_r).y > _stage_height - C.HEX_HEIGHT){
-        _pad_q ++;
-        _pad_r --;
-        _switched = true;
-      }
-
-      _left_pad = [
-        compute_offset(_pad_q, _pad_r),
-        compute_offset(_pad_q, _pad_r - 1)
-      ];
-      if(!_switched){
-        _left_pad.push(compute_offset(_pad_q + 1, _pad_r - 1));
-        _left_pad.push(compute_offset(_pad_q + 1, _pad_r - 2));
-      } else {
-        _left_pad.push(compute_offset(_pad_q - 1, _pad_r));
-        _left_pad.push(compute_offset(_pad_q - 1, _pad_r - 1));
-      }
     }
 
     function compute_offset(q, r){
