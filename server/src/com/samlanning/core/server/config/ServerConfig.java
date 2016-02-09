@@ -32,31 +32,44 @@ public class ServerConfig {
             Object mpd = configRoot.get("mpd");
             if (mpd instanceof Map) {
                 Map<?, ?> mpdConfig = (Map<?, ?>) mpd;
-                Object mpdHost = mpdConfig.get("host");
-                Object mpdPort = mpdConfig.get("port");
-                if (mpdHost instanceof String) {
-                    this.mpdHost = (String) mpdHost;
-                } else {
-                    throw new ConfigurationException("mpd host invalid");
-                }
-                if (mpdPort != null) {
-                    if (mpdPort instanceof Number) {
-                        int mpdPortInt = ((Number) mpdPort).intValue();
-                        if (mpdPortInt > 0) {
-                            this.mpdPort = mpdPortInt;
-                        } else {
-                            throw new ConfigurationException("mpd port must be greater than 0");
-                        }
-                    } else {
-                        throw new ConfigurationException("mpd port must be a number");
-                    }
-                } else {
-                    this.mpdPort = -1;
-                }
+                this.mpdHost = getRequiredString(mpdConfig, "host", "mpd host");
+                this.mpdPort = getPort(mpdConfig, "port", -1, "mpd port");
             } else {
                 throw new ConfigurationException("mpd is not a map");
             }
         }
+    }
+
+    private static String getRequiredString(Map<?, ?> map, String key, String configIdentifier)
+        throws ConfigurationException {
+        Object object = map.get(key);
+        if (object instanceof String) {
+            return (String) object;
+        } else {
+            throw new ConfigurationException("invalid " + configIdentifier);
+        }
+    }
+
+    private static int getPort(Map<?, ?> map, String key, Integer defaultValue,
+        String configIdentifier) throws ConfigurationException {
+        Object object = map.get(key);
+        if (object != null) {
+            if (object instanceof Number) {
+                int portInt = ((Number) object).intValue();
+                if (portInt > 0) {
+                    return portInt;
+                } else {
+                    throw new ConfigurationException(configIdentifier + " must be greater than 0");
+                }
+            } else {
+                throw new ConfigurationException(configIdentifier + " must be a number");
+            }
+        } else if (defaultValue != null) {
+            return defaultValue.intValue();
+        } else {
+            throw new ConfigurationException("missing required " + configIdentifier);
+        }
+
     }
 
     public String mpdHost() {
@@ -65,6 +78,16 @@ public class ServerConfig {
 
     public int mpdPort() {
         return mpdPort;
+    }
+
+    public String websocketHost() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public int websocketPort() {
+        // TODO Auto-generated method stub
+        return 0;
     }
 
 }
