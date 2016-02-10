@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import com.samlanning.core.server.client_protocol.messages.types.ErrorMessage.ErrorType;
 import com.samlanning.core.server.config.ServerConfig;
 import com.samlanning.core.server.mpd.MPDMonitor;
+import com.samlanning.core.server.mpd.MPDMonitor.Listener;
 import com.samlanning.core.server.util.Logging;
 
 public class ServerSwitchboard {
@@ -28,6 +29,10 @@ public class ServerSwitchboard {
         if (mpdMonitor == null)
             throw new RuntimeException("MPDMonitor not setup");
         mpdMonitor.addListener(listener);
+    }
+
+    public void removeMPDListener(Listener listener) {
+        mpdMonitor.removeListener(listener);
     }
 
     public void performAction(String action) throws ActionError {

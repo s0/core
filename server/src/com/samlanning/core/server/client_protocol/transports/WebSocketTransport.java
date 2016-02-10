@@ -60,7 +60,8 @@ public class WebSocketTransport {
 
         @Override
         public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-            connections.remove(conn);
+            ClientConnection connection = connections.remove(conn);
+            connection.transportClosed();
         }
 
         @Override

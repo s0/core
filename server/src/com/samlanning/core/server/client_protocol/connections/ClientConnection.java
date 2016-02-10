@@ -1,6 +1,9 @@
 package com.samlanning.core.server.client_protocol.connections;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
 
 import org.bff.javampd.Player.Status;
 import org.slf4j.Logger;
@@ -95,6 +98,7 @@ public class ClientConnection {
             }
 
         };
+        listeners.storeListener(mediaListener);
         switchboard.listenToMPD(mediaListener);
     }
 
@@ -130,10 +134,30 @@ public class ClientConnection {
     private static class ListenerData {
 
         private int nextListenerId = 100;
+        private final Collection<MPDMonitor.Listener> mpdListeners = new LinkedList<>();
 
         public synchronized int nextListenerId() {
             return nextListenerId++;
         }
+
+        public synchronized void storeListener(MPDMonitor.Listener listener) {
+            mpdListeners.add(listener);
+        }
+
+        public synchronized Collection<MPDMonitor.Listener> mpdListeners() {
+            return new ArrayList<>(mpdListeners);
+        }
+
+    }
+
+    /**
+     * Called by the underlying transport when the connection has been closed.
+     */
+    public void transportClosed() {
+
+        // Unregister all listeners
+        for (MPDMonitor.Listener listener : listeners.mpdListeners())
+            switchboard.removeMPDListener(listener);
 
     }
 
