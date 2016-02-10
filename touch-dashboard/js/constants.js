@@ -4,6 +4,10 @@ define([], function(){
   var HEX_WIDTH = 150;
   var HEX_HEIGHT = Math.sqrt(3)/2 * HEX_WIDTH | 0;
 
+  var SERVER = {
+    WS_URL: "ws://localhost:10001/"
+  };
+
   var COMBINATION_LOCK = {
     SEGMENTS: 10,
     SEGMENTS_SPACING: 5, // in degrees
@@ -27,6 +31,7 @@ define([], function(){
     SVG_NAMESPACE: SVG_NAMESPACE,
     HEX_WIDTH: HEX_WIDTH,
     HEX_HEIGHT: HEX_HEIGHT,
+    SERVER: SERVER,
     COMBINATION_LOCK: COMBINATION_LOCK,
     ENUMS: ENUMS,
   }

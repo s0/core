@@ -1,4 +1,5 @@
-require(['clocks', 'constants', 'lock', 'stage', 'touch', 'util'], function(clocks, C, lock, stage, touch, util){
+require(['clocks', 'constants', 'lock', 'server', 'stage', 'touch', 'util'],
+  function(clocks, C, lock, server, stage, touch, util){
 
   var _state = {
     mode: C.ENUMS.MODE.LOCKED,
