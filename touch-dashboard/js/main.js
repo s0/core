@@ -1,5 +1,5 @@
-require(['clocks', 'constants', 'lock', 'server', 'stage', 'touch', 'util'],
-  function(clocks, C, lock, server, stage, touch, util){
+require(['buttons', 'clocks', 'constants', 'lock', 'server', 'stage', 'touch', 'util'],
+  function(buttons, clocks, C, lock, server, stage, touch, util){
 
   var _state = {
     mode: C.ENUMS.MODE.LOCKED,
@@ -28,12 +28,12 @@ require(['clocks', 'constants', 'lock', 'server', 'stage', 'touch', 'util'],
     _elems.stage = $('#stage');
     _elems.hex_background = _elems.stage.children('.hex-background:first');
     _elems.interaction = _elems.stage.children('.interaction:first');
-    _elems.touch_overlays = _elems.interaction.children('.touch-overlays:first');
     _elems.lock_underlays = _elems.interaction.children('.lock-underlays:first');
+    _elems.touch_overlays = _elems.interaction.children('.touch-overlays:first');
     _elems.clock_text = $('.clock .text');
 
     // Collect Templates
-    _elems.templates.children('.touch-overlays:first').children().each(function(){
+    _elems.templates.children('.touch-overlays').children().each(function(){
       var $this = $(this);
       _elems.touch_overlay_templates[$this.data('overlay')] = $this;
     });
@@ -43,6 +43,7 @@ require(['clocks', 'constants', 'lock', 'server', 'stage', 'touch', 'util'],
     clocks.init(_elems);
     lock.init(_state, _elems);
     touch.init(_state, _elems, $(window));
+    buttons.init(_state, _elems);
 
   });
 

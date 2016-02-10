@@ -1,4 +1,5 @@
-define(["audio", "constants", "lock", "util"], function(audio, C, lock, util){
+define(["audio", "buttons", "constants", "lock", "stage", "util"],
+  function(audio, buttons, C, lock, stage, util){
 
   var _state,
       _elems;
@@ -16,16 +17,25 @@ define(["audio", "constants", "lock", "util"], function(audio, C, lock, util){
     for(var i =0; i < e.originalEvent.changedTouches.length; i++){
       var _touch = e.originalEvent.changedTouches[i];
 
-      if(_state.mode === C.ENUMS.MODE.LOCKED){
+      // Get hex coordinates for current touch
+      var _hex_coordinates = stage.pixel_to_hex(_touch.clientX, _touch.clientY);
+      var _button = buttons.get_button_by_hex(_hex_coordinates);
+      if (_button !== undefined && !_button.touching) {
+        _button.touchstart();
+        _state.touch.touches.set(_touch.identifier, {
+          touch: _touch,
+          button: _button
+        });
+      } else if (_state.mode === C.ENUMS.MODE.LOCKED) {
 
-        if(lock.state.state === C.ENUMS.LOCK_STATE.NONE){
+        if (lock.state.state === C.ENUMS.LOCK_STATE.NONE){
           // Maximum 5
           if(_state.touch.touches.size >= 5)
             return;
 
           add_touch_with_overlay(_touch, "multi-2");
 
-          if(_state.touch.touches.size === 5){
+          if (_state.touch.touches.size === 5){
             lock.show_unlock_overlay_points();
           } else {
             audio.play("beep2");
@@ -58,6 +68,14 @@ define(["audio", "constants", "lock", "util"], function(audio, C, lock, util){
       if(_t.is_lock_input){
         lock.lock_touch_moved(_touch);
       }
+      if(_t.button !== undefined){
+        // Check if still pressing button, and handle if not
+        var _hex_coordinates = stage.pixel_to_hex(_touch.clientX, _touch.clientY);
+        if(_t.button.q != _hex_coordinates.q || _t.button.r != _hex_coordinates.r){
+          _t.button.touchend();
+          delete _t.button;
+        }
+      }
       e.preventDefault();
     }
   }
@@ -73,6 +91,10 @@ define(["audio", "constants", "lock", "util"], function(audio, C, lock, util){
       }
       if(_t.is_lock_input){
         lock.lock_touch_stopped();
+      }
+      if(_t.button !== undefined){
+        _t.button.touchend();
+        _t.button.callback();
       }
       _state.touch.touches.delete(_touch.identifier);
       _state.touch.last_touches.set(_touch.identifier, _touch);
