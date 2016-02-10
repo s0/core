@@ -14,10 +14,11 @@ import org.slf4j.LoggerFactory;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
+import com.samlanning.core.server.client_protocol.transports.WebSocketTransport;
 import com.samlanning.core.server.config.ConfigurationException;
 import com.samlanning.core.server.config.ServerConfig;
 import com.samlanning.core.server.mpd.MPDMonitor;
-import com.samlanning.core.server.transports.WebSocketTransport;
+import com.samlanning.core.server.switchboard.ServerSwitchboard;
 import com.samlanning.core.server.util.Logging;
 
 public class Server {
@@ -45,10 +46,11 @@ public class Server {
             logger.error("Error in config", e);
             return;
         }
+        
+        ServerSwitchboard switchboard = new ServerSwitchboard();
 
         // Setup MPD
         {
-
             MPD.Builder builder = new MPD.Builder();
             builder.server(config.mpdHost());
             if (config.mpdPort() > 0) {
@@ -57,27 +59,14 @@ public class Server {
 
             MPDMonitor monitor = new MPDMonitor(builder.build());
             monitor.start();
-
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            monitor.addListener(new MPDMonitor.Listener() {
-
-                @Override
-                public void statusChanged(Status status) {
-                    System.out.println(status);
-                }
-            });
-
+            
+            switchboard.addMPDMonitor(monitor);
         }
 
         // Setup Websocket
         {
             WebSocketTransport webSocket =
-                new WebSocketTransport(config.websocketHost(), config.websocketPort());
+                new WebSocketTransport(switchboard, config.websocketHost(), config.websocketPort());
             webSocket.start();
         }
 

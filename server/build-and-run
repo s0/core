@@ -1,4 +1,4 @@
 #! /bin/bash
 
-gradle fatJar
+./build-only
 ./run
