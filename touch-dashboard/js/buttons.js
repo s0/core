@@ -34,7 +34,8 @@ define(['audio', 'constants', 'hex', 'server', 'stage'],
     while(stage.compute_hex_offset(_max_q, _max_r).y < _stage_height - _padding_y)
       _max_r ++;
 
-    add_action_button(_max_q, _max_r, 'media_toggle');
+    add_action_button(_max_q, _max_r - 1, 'media_toggle');
+    add_action_button(_max_q, _max_r, 'turn_off_screen');
   }
 
   function add_action_button(q, r, action){

@@ -1,6 +1,8 @@
 package com.samlanning.core.server.config;
 
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.yaml.snakeyaml.Yaml;
@@ -13,6 +15,8 @@ public class ServerConfig {
 
     private final String websocketHost;
     private final int websocketPort;
+
+    private final Map<String, String> commandLineActions;
 
     public ServerConfig(InputStream configFile) throws ConfigurationException {
         Yaml yaml = new Yaml();
@@ -33,24 +37,46 @@ public class ServerConfig {
         // MPD Config
         {
 
-            Map<?, ?> mpdConfig = getRequiredMap(configRoot, "mpd", "mpd");
+            Map<?, ?> mpdConfig = getMap(configRoot, "mpd", true, "mpd");
             this.mpdHost = getRequiredString(mpdConfig, "host", "mpd host");
             this.mpdPort = getPort(mpdConfig, "port", -1, "mpd port");
         }
 
         // WebSocket Config
         {
-            Map<?, ?> websocketConfig = getRequiredMap(configRoot, "websocket", "websocket");
+            Map<?, ?> websocketConfig = getMap(configRoot, "websocket", true, "websocket");
             this.websocketHost = getRequiredString(websocketConfig, "host", "websocket host");
             this.websocketPort = getPort(websocketConfig, "port", null, "websocket port");
         }
+
+        // Command-Line Actions Config
+        {
+            Map<String, String> commandLineActions = new LinkedHashMap<>();
+            Map<?, ?> actionsConfig = getMap(configRoot, "actions", false, "actions");
+            if (actionsConfig != null) {
+                for (Map.Entry<?, ?> entry : actionsConfig.entrySet()) {
+                    Object key = entry.getKey();
+                    Object value = entry.getValue();
+                    if (key instanceof String && value instanceof String) {
+                        commandLineActions.put((String) key, (String) value);
+                    } else {
+                        throw new ConfigurationException(
+                            "Invalid action, they must all be strings: " + key);
+                    }
+                }
+            }
+            this.commandLineActions = Collections.unmodifiableMap(commandLineActions);
+        }
     }
 
-    private Map<?, ?> getRequiredMap(Map<?, ?> map, String key, String configIdentifier)
+    private Map<?, ?> getMap(Map<?, ?> map, String key, boolean required, String configIdentifier)
         throws ConfigurationException {
         Object object = map.get(key);
         if (object == null) {
-            throw new ConfigurationException("missing required config: " + configIdentifier);
+            if (required)
+                throw new ConfigurationException("missing required config: " + configIdentifier);
+            else
+                return null;
         } else if (object instanceof Map) {
             return (Map<?, ?>) object;
         } else {
@@ -110,6 +136,10 @@ public class ServerConfig {
 
     public int websocketPort() {
         return websocketPort;
+    }
+    
+    public Map<String, String> commandLineAction(){
+        return commandLineActions;
     }
 
 }

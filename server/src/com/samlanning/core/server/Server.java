@@ -47,7 +47,7 @@ public class Server {
             return;
         }
         
-        ServerSwitchboard switchboard = new ServerSwitchboard();
+        ServerSwitchboard switchboard = new ServerSwitchboard(config);
 
         // Setup MPD
         {
