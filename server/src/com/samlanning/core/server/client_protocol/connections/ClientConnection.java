@@ -11,9 +11,11 @@ import com.samlanning.core.server.client_protocol.messages.types.ErrorMessage.Er
 import com.samlanning.core.server.client_protocol.messages.types.EventMessage;
 import com.samlanning.core.server.client_protocol.messages.types.RequestMessage;
 import com.samlanning.core.server.client_protocol.messages.types.ResponseMessage;
+import com.samlanning.core.server.client_protocol.messages.types.requests.ActionRequestPayload;
 import com.samlanning.core.server.client_protocol.messages.types.requests.ListenRequestPayload;
 import com.samlanning.core.server.client_protocol.messages.types.responses.ListenResponsePayload;
 import com.samlanning.core.server.mpd.MPDMonitor;
+import com.samlanning.core.server.switchboard.ActionError;
 import com.samlanning.core.server.switchboard.ServerSwitchboard;
 import com.samlanning.core.server.util.Logging;
 
@@ -46,7 +48,9 @@ public class ClientConnection {
             case listen:
                 handleListenRequest(request);
                 return;
-
+            case action:
+                handleActionRequest(request);
+                return;
         }
         this.sendRequestError(request, ErrorType.internal, "Not Implemented");
         throw new RuntimeException("Not Implemented");
@@ -92,6 +96,30 @@ public class ClientConnection {
 
         };
         switchboard.listenToMPD(mediaListener);
+    }
+
+    private void handleActionRequest(RequestMessage request) {
+        if (request.payload == null) {
+            this.sendRequestError(request, ErrorType.invalid_request, "Missing Payload");
+            return;
+        }
+
+        ActionRequestPayload payload;
+        try {
+            payload = ActionRequestPayload.fromJsonNode(request.payload);
+        } catch (IOException e) {
+            this.sendRequestError(request, ErrorType.invalid_request,
+                "Payload Error: " + e.getMessage());
+            return;
+        }
+
+        try {
+            switchboard.performAction(payload.action);
+            this.sender.sendMessageToClient(new ResponseMessage(request.requestId, null));
+        } catch (ActionError e) {
+            this.sendRequestError(request, e.errorType, e.getMessage());
+        }
+
     }
 
     private void sendRequestError(RequestMessage request, ErrorType error, String message) {

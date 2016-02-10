@@ -77,4 +77,17 @@ public class MPDMonitor extends Listenable<MPDMonitor.Listener> {
 
     }
 
+    public boolean toggle() {
+        try {
+            if(mpd.getPlayer().getStatus() == Status.STATUS_PLAYING)
+                mpd.getPlayer().pause();
+            else
+                mpd.getPlayer().play();
+            return true;
+        } catch (MPDPlayerException e) {
+            logger.warn("Error performing toggle action", e);
+            return false;
+        }
+    }
+
 }
