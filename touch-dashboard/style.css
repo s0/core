@@ -75,6 +75,7 @@ polygon.hex-polygon.button {
 
 polygon.hex-polygon.button.touching {
   stroke: rgba(255, 255, 255, 0.3);
+  transition: stroke 0s;
 }
 
 polygon.hex-polygon.button.error {
