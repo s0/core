@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.java_websocket.WebSocket;
+import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.slf4j.Logger;
@@ -19,10 +20,9 @@ import com.samlanning.core.server.switchboard.ServerSwitchboard;
 import com.samlanning.core.server.util.Logging;
 
 public class WebSocketTransport {
-    
+
     private static final Logger log = Logging.logger(WebSocketTransport.class);
-    
-    
+
     private final WSServer server;
 
     public WebSocketTransport(ServerSwitchboard switchboard, String hostname, int port) {
@@ -48,7 +48,8 @@ public class WebSocketTransport {
                     System.out.println("sending: " + message);
                     try {
                         conn.send(message.toJson());
-                    } catch (IOException e) {
+                    } catch (IOException | WebsocketNotConnectedException e) {
+                        // TODO: shutdown ClientConnection when not connected
                         log.error("Error sending message", e);
                     }
                 }
@@ -66,7 +67,7 @@ public class WebSocketTransport {
         public void onMessage(WebSocket conn, String message) {
             log.debug("Received message: " + message);
             ClientConnection clientConnection = connections.get(conn);
-            if(clientConnection == null){
+            if (clientConnection == null) {
                 log.error("Received message from WebSocket with no ClientConnection");
                 conn.close();
                 return;
@@ -80,7 +81,7 @@ public class WebSocketTransport {
                     return;
                 }
                 clientConnection.receiveMessageFromClient(jsonMessage);
-            } catch (Throwable e){
+            } catch (Throwable e) {
                 log.error("Uncaught Exception in onMessage()", e);
             }
         }
@@ -90,8 +91,8 @@ public class WebSocketTransport {
             ex.printStackTrace();
             conn.close();
         }
-        
-        private static void sendError(WebSocket conn, ErrorType errorType, Throwable throwable){
+
+        private static void sendError(WebSocket conn, ErrorType errorType, Throwable throwable) {
             log.info("Error: ", throwable);
             try {
                 conn.send(new ErrorMessage(errorType, throwable.getMessage()).toJson());
