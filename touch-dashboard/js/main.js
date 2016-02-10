@@ -44,6 +44,7 @@ require(['buttons', 'clocks', 'constants', 'lock', 'server', 'stage', 'touch', '
     lock.init(_state, _elems);
     touch.init(_state, _elems, $(window));
     buttons.init(_state, _elems);
+    server.init();
 
   });
 

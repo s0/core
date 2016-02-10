@@ -34,7 +34,8 @@ public class RequestMessage extends JsonMessage {
     }
 
     public enum RequestType {
-        listen
+        listen,
+        action
     }
 
 }

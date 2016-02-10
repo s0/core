@@ -3,9 +3,14 @@ define(['constants'], function(C){
   var _next_request_id = 1;
   var _open_requests = {};
   var _listeners = {};
-  var _socket = new WebSocket(C.SERVER.WS_URL);
-  _socket.onopen = on_socket_open;
-  _socket.onmessage = on_socket_message;
+  var _socket = null;
+
+
+  function init(){
+    _socket = new WebSocket(C.SERVER.WS_URL);
+    _socket.onopen = on_socket_open;
+    _socket.onmessage = on_socket_message;
+  }
 
   function send_message(message){
     _socket.send(JSON.stringify(message));
@@ -77,6 +82,7 @@ define(['constants'], function(C){
   }
 
   return {
+    init: init,
     send_request: send_request,
     setup_listener: setup_listener
   }

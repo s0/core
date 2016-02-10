@@ -68,13 +68,18 @@ polygon.hex-polygon.button {
   fill-opacity: 0.1;
   fill: #62afc9;
   stroke: rgba(32, 204, 255, 0.2);
-  transition: stroke 0.3s;
+  transition: stroke 0.3s, fill 0.3s;
   transform: scale(0.9);
   transform-origin: 50% 50%;
 }
 
 polygon.hex-polygon.button.touching {
   stroke: rgba(255, 255, 255, 0.3);
+}
+
+polygon.hex-polygon.button.error {
+  stroke: rgba(255, 0, 0, 0.7);
+  fill: #ff0000;
 }
 
 polygon.hex-polygon.button-inner {

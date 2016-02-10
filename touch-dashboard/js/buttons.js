@@ -1,4 +1,5 @@
-define(['audio', 'constants', 'hex', 'stage'], function(audio, C, hex, stage){
+define(['audio', 'constants', 'hex', 'server', 'stage'],
+  function(audio, C, hex, server, stage){
 
   var _state,
       _elems,
@@ -33,8 +34,21 @@ define(['audio', 'constants', 'hex', 'stage'], function(audio, C, hex, stage){
     while(stage.compute_hex_offset(_max_q, _max_r).y < _stage_height - _padding_y)
       _max_r ++;
 
-    add_hex_button(_max_q, _max_r, function(){
-      console.log("button pressed");
+    add_action_button(_max_q, _max_r, 'media_toggle');
+  }
+
+  function add_action_button(q, r, action){
+    add_hex_button(q, r, function(button){
+      function error(message){
+        console.error("Error performing button action:", message);
+        button.action_error();
+      }
+      server.send_request('action',
+        {
+          action: action
+        },
+        function(){},
+        error);
     });
   }
 
@@ -45,11 +59,14 @@ define(['audio', 'constants', 'hex', 'stage'], function(audio, C, hex, stage){
     _elems.hex_background.append($hex);
     var _class_normal = $hex.attr('class');
     var _class_touching = _class_normal + ' touching';
+    var _class_error = _class_normal + ' error';
 
     var $inner_hex = hex.draw_hexagon(_offset, 'button-inner');
     _elems.hex_background.append($inner_hex);
     var _inner_class_normal = $inner_hex.attr('class');
     var _inner_class_touching = _inner_class_normal + ' touching';
+
+    var _error_timeout;
 
     var _button = {
       q: q,
@@ -57,17 +74,28 @@ define(['audio', 'constants', 'hex', 'stage'], function(audio, C, hex, stage){
       touching: false,
       offset: _offset,
       touchstart: function(){
+        clearTimeout(_error_timeout);
         _button.touching = true;
         $hex.attr('class', _class_touching);
         $inner_hex.attr('class', _inner_class_touching);
         audio.play("beep1");
       },
       touchend: function(){
+        clearTimeout(_error_timeout);
         _button.touching = false;
         $hex.attr('class', _class_normal);
         $inner_hex.attr('class', _inner_class_normal);
       },
-      callback: callback
+      action_error: function(){
+        var _old_class = $hex.attr('class');
+        $hex.attr('class', _class_error);
+        _error_timeout = setTimeout(function(){
+          $hex.attr('class', _old_class);
+        }, 1000);
+      },
+      callback: function(){
+        callback(_button);
+      }
     };
     _buttons[q + ',' + r] = _button;
   }
