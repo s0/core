@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import org.bff.javampd.Player.Status;
+import org.bff.javampd.objects.MPDSong;
 import org.slf4j.Logger;
 
 import com.samlanning.core.server.client_protocol.messages.JsonMessage;
@@ -14,6 +15,7 @@ import com.samlanning.core.server.client_protocol.messages.types.ErrorMessage.Er
 import com.samlanning.core.server.client_protocol.messages.types.EventMessage;
 import com.samlanning.core.server.client_protocol.messages.types.RequestMessage;
 import com.samlanning.core.server.client_protocol.messages.types.ResponseMessage;
+import com.samlanning.core.server.client_protocol.messages.types.events.MediaEventPayload;
 import com.samlanning.core.server.client_protocol.messages.types.requests.ActionRequestPayload;
 import com.samlanning.core.server.client_protocol.messages.types.requests.ListenRequestPayload;
 import com.samlanning.core.server.client_protocol.messages.types.responses.ListenResponsePayload;
@@ -91,10 +93,43 @@ public class ClientConnection {
         // Send listener ID here
         MPDMonitor.Listener mediaListener = new MPDMonitor.Listener() {
 
+            private Status status;
+            private MPDSong song;
+
             @Override
-            public void statusChanged(Status status) {
-                sender.sendMessageToClient(new EventMessage(listenerId, "MPD Status Changed: "
-                    + status));
+            public synchronized void statusChanged(Status status) {
+                this.status = status;
+                sendEvent();
+            }
+
+            @Override
+            public synchronized void songChanged(MPDSong song) {
+                this.song = song;
+                sendEvent();
+            }
+
+            private synchronized void sendEvent() {
+                MediaEventPayload.State state = null;
+                switch (status) {
+                    case STATUS_PAUSED:
+                        state = MediaEventPayload.State.paused;
+                        break;
+                    case STATUS_PLAYING:
+                        state = MediaEventPayload.State.playing;
+                        break;
+                    case STATUS_STOPPED:
+                        state = MediaEventPayload.State.stopped;
+                        break;
+                }
+                MediaEventPayload payload;
+                if (song == null) {
+                    payload = new MediaEventPayload(state, null, null, null);
+                } else {
+                    payload =
+                        new MediaEventPayload(state, song.getTitle(), song.getArtistName(),
+                            song.getAlbumName());
+                }
+                sender.sendMessageToClient(new EventMessage(listenerId, payload));
             }
 
         };
