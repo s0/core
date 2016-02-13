@@ -45,8 +45,8 @@ public class WebSocketTransport {
 
                 @Override
                 public void sendMessageToClient(JsonMessage message) {
-                    System.out.println("sending: " + message);
                     try {
+                        log.debug("sending: " + message.toJson());
                         conn.send(message.toJson());
                     } catch (IOException | WebsocketNotConnectedException e) {
                         // TODO: shutdown ClientConnection when not connected

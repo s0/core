@@ -42,8 +42,6 @@ public class MPDMonitor extends Listenable<MPDMonitor.Listener> {
         public void songChanged(MPDSong song);
 
         default void updateBoth(Status status, MPDSong song){
-            System.out.println("Update Both");
-            System.out.println(song);
             statusChanged(status);
             songChanged(song);
         }
