@@ -14,6 +14,7 @@ require(['buttons', 'clocks', 'constants', 'lock', 'server', 'stage', 'touch', '
     lock_dialog_template: null,
     stage: null,
     hex_background: null,
+    hex_overlays: null,
     interaction: null,
     touch_overlays: null,
     lock_underlays: null,
@@ -27,6 +28,7 @@ require(['buttons', 'clocks', 'constants', 'lock', 'server', 'stage', 'touch', '
     _elems.templates = $('#templates');
     _elems.stage = $('#stage');
     _elems.hex_background = _elems.stage.children('.hex-background:first');
+    _elems.hex_overlays = _elems.stage.children('.hex-overlays:first');
     _elems.interaction = _elems.stage.children('.interaction:first');
     _elems.lock_underlays = _elems.interaction.children('.lock-underlays:first');
     _elems.touch_overlays = _elems.interaction.children('.touch-overlays:first');

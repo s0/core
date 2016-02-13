@@ -81,6 +81,7 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
 
   function clear(){
     _elems.hex_background.html('');
+    _elems.hex_overlays.html('');
   }
 
   function add_redraw_listener(listener){

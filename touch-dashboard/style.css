@@ -3,6 +3,53 @@
     src: url(fonts/tr2n/Tr2n.ttf);
 }
 
+@font-face {
+  font-family: Glyphicons;
+
+  src: url('../fonts/glyphicons/glyphicons-halflings-regular.eot');
+  src: url('../fonts/glyphicons/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('../fonts/glyphicons/glyphicons-halflings-regular.woff') format('woff'), url('../fonts/glyphicons/glyphicons-halflings-regular.ttf') format('truetype'), url('../fonts/glyphicons/glyphicons-halflings-regular.svg#glyphicons_halflingsregular') format('svg');
+}
+
+.glyphicon {
+    font-family: 'Glyphicons';
+    font-style: normal;
+    font-weight: normal;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+}
+
+.glyphicon.button {
+  display: block;
+  position: absolute;
+  margin: -20px -30px;
+  width: 60px;
+  height: 40px;
+  line-height: 40px;
+  font-size: 40px;
+  text-align: center;
+  color: rgba(32, 204, 255, 0.5);
+  transition: color 0.3s, transform 0.3s;
+  transform: scale(1);
+  transform-origin: 50% 50%;
+}
+
+.glyphicon.button.touching {
+  transform: scale(1.3);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.glyphicon.glyphicon-power:before {
+    content: "\e017";
+}
+
+.glyphicon.glyphicon-play:before {
+    content: "\e072";
+}
+
+.glyphicon.glyphicon-pause:before {
+    content: "\e073";
+}
+
 @keyframes spin {
     from {transform:rotate(0deg);}
     to {transform:rotate(360deg);}

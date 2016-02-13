@@ -1,5 +1,5 @@
-define(['audio', 'constants', 'hex', 'server', 'stage'],
-  function(audio, C, hex, server, stage){
+define(['audio', 'constants', 'hex', 'icons', 'server', 'stage'],
+  function(audio, C, hex, icons, server, stage){
 
   var _state,
       _elems,
@@ -34,11 +34,11 @@ define(['audio', 'constants', 'hex', 'server', 'stage'],
     while(stage.compute_hex_offset(_max_q, _max_r).y < _stage_height - _padding_y)
       _max_r ++;
 
-    add_action_button(_max_q, _max_r - 1, 'media_toggle');
-    add_action_button(_max_q, _max_r, 'turn_off_screen');
+    add_action_button(_max_q, _max_r - 1, 'media_toggle', 'play');
+    add_action_button(_max_q, _max_r, 'turn_off_screen', 'power');
   }
 
-  function add_action_button(q, r, action){
+  function add_action_button(q, r, action, icon){
     add_hex_button(q, r, function(button){
       function error(message){
         console.error("Error performing button action:", message);
@@ -50,10 +50,10 @@ define(['audio', 'constants', 'hex', 'server', 'stage'],
         },
         function(){},
         error);
-    });
+    }, icon);
   }
 
-  function add_hex_button(q, r, callback){
+  function add_hex_button(q, r, callback, icon){
     var _offset = stage.compute_hex_offset(q, r);
 
     var $hex = hex.draw_hexagon(_offset, 'button');
@@ -67,6 +67,17 @@ define(['audio', 'constants', 'hex', 'server', 'stage'],
     var _inner_class_normal = $inner_hex.attr('class');
     var _inner_class_touching = _inner_class_normal + ' touching';
 
+    var $icon = null;
+    if (icon !== undefined){
+      var $icon = icons.create_button_icon(icon);
+      $icon.addClass('button');
+      $icon.css({
+        top: _offset.y,
+        left: _offset.x
+      });
+      $icon.appendTo(_elems.hex_overlays);
+    }
+
     var _error_timeout;
 
     var _button = {
@@ -79,6 +90,8 @@ define(['audio', 'constants', 'hex', 'server', 'stage'],
         _button.touching = true;
         $hex.attr('class', _class_touching);
         $inner_hex.attr('class', _inner_class_touching);
+        if($icon !== null)
+          $icon.addClass('touching');
         audio.play("beep1");
       },
       touchend: function(){
@@ -86,6 +99,8 @@ define(['audio', 'constants', 'hex', 'server', 'stage'],
         _button.touching = false;
         $hex.attr('class', _class_normal);
         $inner_hex.attr('class', _inner_class_normal);
+        if($icon !== null)
+          $icon.removeClass('touching');
       },
       action_error: function(){
         var _old_class = $hex.attr('class');
