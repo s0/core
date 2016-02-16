@@ -75,6 +75,9 @@ define([], function(){
     },
     new_listenable: function() {
       return new Listenable();
+    },
+    single_listener: function(callback) {
+      return new Listener(callback);
     }
   }
 

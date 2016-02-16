@@ -165,6 +165,31 @@ polygon.hex-polygon.button-inner.touching {
   opacity: 0;
 }
 
+#stage .widget-centre .media-info {
+  position: absolute;
+  bottom: 100px;
+  color: rgba(32, 204, 255, 0.3);
+  font-family: "Ubuntu", "tr2n";
+  width: 600px;
+  left: -300px;
+}
+
+#stage .widget-centre .media-info p {
+  text-align: center;
+  margin: 0;
+  font-size: 20px;
+  line-height: 150%;
+}
+
+#stage .widget-centre .media-info p.media-title {
+  font-size: 28px;
+  color: rgba(32, 204, 255, 0.5);
+}
+
+#stage .widget-centre .media-info p.media-album {
+  font-size: 18px;
+}
+
 #stage .widget-centre .clock .text {
   position: absolute;
   color: rgba(32, 204, 255, 0.7);

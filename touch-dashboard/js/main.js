@@ -33,6 +33,7 @@ require(['buttons', 'clocks', 'constants', 'lock', 'media', 'server', 'stage', '
     _elems.lock_underlays = _elems.interaction.children('.lock-underlays:first');
     _elems.touch_overlays = _elems.interaction.children('.touch-overlays:first');
     _elems.clock_text = $('.clock .text');
+    _elems.media_info = $('.widget.media-info');
 
     // Collect Templates
     _elems.templates.children('.touch-overlays').children().each(function(){
@@ -46,7 +47,7 @@ require(['buttons', 'clocks', 'constants', 'lock', 'media', 'server', 'stage', '
     lock.init(_state, _elems);
     touch.init(_state, _elems, $(window));
     buttons.init(_state, _elems);
-    media.init();
+    media.init(_elems);
     server.init();
 
   });
