@@ -39,9 +39,10 @@ public class MPDMonitor extends Listenable<MPDMonitor.Listener> {
 
     public interface Listener {
         public void statusChanged(Status status);
+
         public void songChanged(MPDSong song);
 
-        default void updateBoth(Status status, MPDSong song){
+        default void updateBoth(Status status, MPDSong song) {
             statusChanged(status);
             songChanged(song);
         }
@@ -54,6 +55,8 @@ public class MPDMonitor extends Listenable<MPDMonitor.Listener> {
         private final MPD mpd;
         private Status lastStatus;
         private MPDSong lastSong;
+
+        boolean refreshInturrupt = false;
 
         private T(MPD mpd) {
             super("MPDMonitor Thread");
@@ -72,7 +75,7 @@ public class MPDMonitor extends Listenable<MPDMonitor.Listener> {
                         MPDMonitor.this.visitListeners(l -> l.statusChanged(status));
                         lastStatus = status;
                     }
-                    if(song != lastSong && (song == null || !song.equals(lastSong))){
+                    if (song != lastSong && (song == null || !song.equals(lastSong))) {
                         MPDMonitor.this.updateNewListenerVisitor(l -> l.updateBoth(status, song));
                         MPDMonitor.this.visitListeners(l -> l.songChanged(song));
                         lastSong = song;
@@ -84,19 +87,34 @@ public class MPDMonitor extends Listenable<MPDMonitor.Listener> {
                 try {
                     Thread.sleep(DELAY);
                 } catch (InterruptedException e) {
-                    logger.warn("MPDMonitor Interrupted", e);
+                    synchronized (this) {
+                        if (refreshInturrupt) {
+                            refreshInturrupt = false;
+                        } else {
+                            logger.warn("MPDMonitor Interrupted", e);
+                        }
+                    }
                 }
             }
+        }
+
+        /** Trigger a refresh immediately */
+        public void refresh() {
+            synchronized (this) {
+                refreshInturrupt = true;
+            }
+            this.interrupt();
         }
 
     }
 
     public boolean toggle() {
         try {
-            if(mpd.getPlayer().getStatus() == Status.STATUS_PLAYING)
+            if (mpd.getPlayer().getStatus() == Status.STATUS_PLAYING)
                 mpd.getPlayer().pause();
             else
                 mpd.getPlayer().play();
+            thread.refresh();
             return true;
         } catch (MPDPlayerException e) {
             logger.warn("Error performing toggle action", e);
