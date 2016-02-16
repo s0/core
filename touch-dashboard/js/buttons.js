@@ -37,7 +37,7 @@ define(['audio', 'constants', 'hex', 'icons', 'listeners', 'media', 'server', 's
       _max_r ++;
 
     var _toggle_button =
-        add_action_button(_max_q, _max_r - 1, 'media_toggle', 'play');
+        add_action_button(_max_q, _max_r - 2, 'media_toggle', 'play');
 
     media.add_state_listener(_button_listeners.add(function(state){
       if (state.state === 'playing') {
@@ -47,7 +47,7 @@ define(['audio', 'constants', 'hex', 'icons', 'listeners', 'media', 'server', 's
       }
     }));
 
-    add_action_button(_max_q, _max_r, 'turn_off_screen', 'power');
+    add_action_button(_max_q, _max_r - 1, 'turn_off_screen', 'power');
   }
 
   function add_action_button(q, r, action, icon){
