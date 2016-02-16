@@ -1,5 +1,6 @@
 define(['audio', 'constants', 'hex', 'icons', 'listeners', 'media', 'server', 'stage'],
   function(audio, C, hex, icons, listeners, media, server, stage){
+  'use strict';
 
   var _state,
       _elems,

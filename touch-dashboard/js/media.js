@@ -1,4 +1,5 @@
 define(['listeners', 'server'], function(listeners, server){
+  'use strict';
 
   var _elems;
   var _state = null;

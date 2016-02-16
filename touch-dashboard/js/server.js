@@ -1,4 +1,5 @@
 define(['constants'], function(C){
+  'use strict';
 
   var _next_request_id = 1;
   var _open_requests = {};
@@ -72,26 +73,26 @@ define(['constants'], function(C){
   }
 
   function on_socket_message (event){
-    message = JSON.parse(event.data);
-    switch(message.type){
+    var _message = JSON.parse(event.data);
+    switch(_message.type){
       case "error":
-        if (message.request_id !== undefined){
-          get_request(message.request_id).error(message);
+        if (_message.request_id !== undefined){
+          get_request(_message.request_id).error(_message);
         } else {
-          console.warn("Error from Server: ", message);
+          console.warn("Error from Server: ", _message);
         }
         return;
       case "response":
-        get_request(message.request_id).success(message.payload);
+        get_request(_message.request_id).success(_message.payload);
         return;
       case "event":
-        var _callback = _listener_callbacks[message.listener_id];
+        var _callback = _listener_callbacks[_message.listener_id];
         if(_callback === undefined)
           throw new Error("No listener with id: " + id);
-        _callback(message.payload);
+        _callback(_message.payload);
         return;
     }
-    console.warn("unhandled from server: ", message);
+    console.warn("unhandled from server: ", _message);
   }
 
   return {

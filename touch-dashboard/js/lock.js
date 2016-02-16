@@ -1,4 +1,6 @@
-define(['audio', 'constants', 'util', 'widgets/combination_lock'], function(audio, C, util, lock_widget){
+define(['audio', 'constants', 'util', 'widgets/combination_lock'],
+  function(audio, C, util, lock_widget){
+  'use strict';
 
   var _state,
       _elems,

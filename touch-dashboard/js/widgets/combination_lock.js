@@ -1,4 +1,5 @@
 define(['constants', 'util'], function(C, util){
+  'use strict';
 
   function create(){
 

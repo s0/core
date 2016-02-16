@@ -1,4 +1,5 @@
 define([], function(){
+  'use strict';
 
   function create_button_icon(icon){
     var $icon = $('<span/>');

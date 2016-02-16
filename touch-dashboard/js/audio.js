@@ -1,4 +1,5 @@
 define([], function(){
+  'use strict';
 
   var _audio = {
     beep1: audio_pool("audio/freesound/123105__dj-chronos__gui-2.wav", 5, 0.2, 0),

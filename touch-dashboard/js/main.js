@@ -1,5 +1,6 @@
 require(['buttons', 'clocks', 'constants', 'lock', 'media', 'server', 'stage', 'touch', 'util'],
   function(buttons, clocks, C, lock, media, server, stage, touch, util){
+  'use strict';
 
   var _state = {
     mode: C.ENUMS.MODE.LOCKED,

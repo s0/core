@@ -1,4 +1,5 @@
 define(['constants', 'hex', 'util'], function(C, hex, util){
+  'use strict';
 
   var _elems,
       _on_redraw_listeners = [];
@@ -98,11 +99,11 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
   function pixel_to_hex(x, y){
     x -= _centre_x;
     y -= _centre_y;
-    q = x * 4/ 3 / C.HEX_WIDTH;
-    r = (-x / 3 + Math.sqrt(3)/3 * y) / C.HEX_WIDTH * 2;
+    var _q = x * 4/ 3 / C.HEX_WIDTH;
+    var _r = (-x / 3 + Math.sqrt(3)/3 * y) / C.HEX_WIDTH * 2;
     return {
-      q: Math.round(q),
-      r: Math.round(r)
+      q: Math.round(_q),
+      r: Math.round(_r)
     }
   }
 

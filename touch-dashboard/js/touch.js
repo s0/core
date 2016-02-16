@@ -1,5 +1,6 @@
 define(["audio", "buttons", "constants", "lock", "stage", "util"],
   function(audio, buttons, C, lock, stage, util){
+  'use strict';
 
   var _state,
       _elems;

@@ -4,6 +4,7 @@
   one go (removing any references to them from Listenables).
 */
 define([], function(){
+  'use strict';
 
   var _next_listener_id = 0;
 

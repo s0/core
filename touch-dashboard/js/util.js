@@ -1,4 +1,5 @@
 define(['constants'], function(C){
+  'use strict';
 
   function is_over(touch, $elem, padding){
     if(padding === undefined)

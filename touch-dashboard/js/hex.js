@@ -1,4 +1,5 @@
 define(['constants', 'util'], function(C, util){
+  'use strict';
 
   // cached number values
   var _x_step = C.HEX_WIDTH / 4 * 3 | 0;
