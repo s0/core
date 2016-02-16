@@ -29,6 +29,7 @@ define([], function(){
     CENTER_STATE: {
       NONE: 0,
       CLOCK: 1,
+      LIGHTING: 2,
     }
   }
 

@@ -9,6 +9,7 @@ define(['constants'], function(C){
     _elems = elems;
     setup_none_state();
     setup_clock_state();
+    setup_lighting_state();
 
     switch_state(C.ENUMS.CENTER_STATE.CLOCK);
   }
@@ -32,6 +33,13 @@ define(['constants'], function(C){
         $clock.removeClass('hidden');
         $media_info.removeClass('hidden');
       }
+    };
+  }
+
+  function setup_lighting_state() {
+    _states[C.ENUMS.CENTER_STATE.LIGHTING] = {
+      hide: function(){},
+      show: function(){}
     };
   }
 

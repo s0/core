@@ -91,7 +91,6 @@ define(['audio', 'center', 'constants', 'util', 'widgets/combination_lock'],
        _lock_state.state !== C.ENUMS.LOCK_STATE.INPUTTING)
       return;
 
-    center.switch_state(C.ENUMS.CENTER_STATE.CLOCK);
     audio.play("close1");
 
     _lock_state.state = C.ENUMS.LOCK_STATE.NONE;
@@ -117,6 +116,7 @@ define(['audio', 'center', 'constants', 'util', 'widgets/combination_lock'],
     } else {
       // Touched outside of lock
       close_unlock_dialog();
+      center.switch_state(C.ENUMS.CENTER_STATE.CLOCK);
     }
   }
 
@@ -148,6 +148,7 @@ define(['audio', 'center', 'constants', 'util', 'widgets/combination_lock'],
   function lock_touch_stopped(){
     // Check if lock code is correct
     close_unlock_dialog();
+    center.switch_state(C.ENUMS.CENTER_STATE.CLOCK);
   }
 
   return {

@@ -1,5 +1,5 @@
-define(['audio', 'constants', 'hex', 'icons', 'listeners', 'media', 'server', 'stage'],
-  function(audio, C, hex, icons, listeners, media, server, stage){
+define(['audio', 'center', 'constants', 'hex', 'icons', 'listeners', 'lock', 'media', 'server', 'stage'],
+  function(audio, center, C, hex, icons, listeners, lock, media, server, stage){
   'use strict';
 
   var _state,
@@ -49,6 +49,15 @@ define(['audio', 'constants', 'hex', 'icons', 'listeners', 'media', 'server', 's
     }));
 
     add_action_button(_max_q, _max_r - 1, 'turn_off_screen', 'power');
+
+    add_hex_button(_max_q, _max_r - 3, function(button){
+      if (center.get_state() === C.ENUMS.CENTER_STATE.LIGHTING){
+        center.switch_state(C.ENUMS.CENTER_STATE.CLOCK);
+      } else {
+        center.switch_state(C.ENUMS.CENTER_STATE.LIGHTING);
+        lock.close_unlock_dialog();
+      }
+    });
   }
 
   function add_action_button(q, r, action, icon){
