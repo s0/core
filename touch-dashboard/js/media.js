@@ -1,21 +1,21 @@
-define(['server'], function(server){
+define(['listeners', 'server'], function(listeners, server){
 
   var _state = null;
-  var _listeners = [];
+  var _listenable = listeners.new_listenable();
 
   function init(){
     server.setup_listener('media', function(payload){
       _state = payload;
-      _listeners.forEach(function(callback) {
+      _listenable.visit(function(callback) {
         callback(_state);
       });
     });
   }
 
-  function add_state_listener(callback) {
-    _listeners.push(callback);
+  function add_state_listener(listener) {
+    _listenable.add(listener);
     if (_state !== null)
-      callback(_state);
+      listener.call(_state);
   }
 
   return {

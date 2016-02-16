@@ -1,9 +1,10 @@
-define(['audio', 'constants', 'hex', 'icons', 'media', 'server', 'stage'],
-  function(audio, C, hex, icons, media, server, stage){
+define(['audio', 'constants', 'hex', 'icons', 'listeners', 'media', 'server', 'stage'],
+  function(audio, C, hex, icons, listeners, media, server, stage){
 
   var _state,
       _elems,
-      _buttons;
+      _buttons,
+      _button_listeners = listeners.new_group();
 
   function init(state, elems){
     _state = state;
@@ -14,6 +15,7 @@ define(['audio', 'constants', 'hex', 'icons', 'media', 'server', 'stage'],
   }
 
   function on_stage_redraw(){
+    _button_listeners.clear();
     draw_buttons();
   }
 
@@ -37,14 +39,13 @@ define(['audio', 'constants', 'hex', 'icons', 'media', 'server', 'stage'],
     var _toggle_button =
         add_action_button(_max_q, _max_r - 1, 'media_toggle', 'play');
 
-    media.add_state_listener(function(state){
+    media.add_state_listener(_button_listeners.add(function(state){
       if (state.state === 'playing') {
         _toggle_button.icon.removeClass('glyphicon-play').addClass('glyphicon-pause');
       } else {
         _toggle_button.icon.removeClass('glyphicon-pause').addClass('glyphicon-play');
       }
-    });
-
+    }));
 
     add_action_button(_max_q, _max_r, 'turn_off_screen', 'power');
   }
