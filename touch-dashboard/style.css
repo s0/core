@@ -157,7 +157,7 @@ polygon.hex-polygon.button-inner.touching {
 #stage .widget {
   transform: scale(1);
   opacity: 1;
-  transition: transform 0.3s, opacity 0.2s;
+  transition: transform 0.5s, opacity 0.2s;
 }
 
 #stage .widget.hidden {

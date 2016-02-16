@@ -1,5 +1,5 @@
-require(['buttons', 'clocks', 'constants', 'lock', 'media', 'server', 'stage', 'touch', 'util'],
-  function(buttons, clocks, C, lock, media, server, stage, touch, util){
+require(['buttons', 'center', 'clocks', 'constants', 'lock', 'media', 'server', 'stage', 'touch', 'util'],
+  function(buttons, center, clocks, C, lock, media, server, stage, touch, util){
   'use strict';
 
   var _state = {
@@ -45,6 +45,7 @@ require(['buttons', 'clocks', 'constants', 'lock', 'media', 'server', 'stage', '
     // Initialise Modules
     stage.init(_elems, $(window));
     clocks.init(_elems);
+    center.init(_elems);
     lock.init(_state, _elems);
     touch.init(_state, _elems, $(window));
     buttons.init(_state, _elems);

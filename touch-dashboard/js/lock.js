@@ -1,5 +1,5 @@
-define(['audio', 'constants', 'util', 'widgets/combination_lock'],
-  function(audio, C, util, lock_widget){
+define(['audio', 'center', 'constants', 'util', 'widgets/combination_lock'],
+  function(audio, center, C, util, lock_widget){
   'use strict';
 
   var _state,
@@ -60,6 +60,7 @@ define(['audio', 'constants', 'util', 'widgets/combination_lock'],
     if(_lock_state.state === C.ENUMS.LOCK_STATE.DIALOG)
       return;
 
+    center.switch_state(C.ENUMS.CENTER_STATE.NONE);
     audio.play("ready2");
 
     _lock_state.state = C.ENUMS.LOCK_STATE.DIALOG
@@ -90,6 +91,7 @@ define(['audio', 'constants', 'util', 'widgets/combination_lock'],
        _lock_state.state !== C.ENUMS.LOCK_STATE.INPUTTING)
       return;
 
+    center.switch_state(C.ENUMS.CENTER_STATE.CLOCK);
     audio.play("close1");
 
     _lock_state.state = C.ENUMS.LOCK_STATE.NONE;

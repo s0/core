@@ -25,6 +25,10 @@ define([], function(){
       TOUCH_POINTS: 1,
       DIALOG: 2,
       INPUTTING: 3
+    },
+    CENTER_STATE: {
+      NONE: 0,
+      CLOCK: 1,
     }
   }
 
