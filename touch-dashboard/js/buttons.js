@@ -1,5 +1,5 @@
-define(['audio', 'constants', 'hex', 'icons', 'server', 'stage'],
-  function(audio, C, hex, icons, server, stage){
+define(['audio', 'constants', 'hex', 'icons', 'media', 'server', 'stage'],
+  function(audio, C, hex, icons, media, server, stage){
 
   var _state,
       _elems,
@@ -34,12 +34,23 @@ define(['audio', 'constants', 'hex', 'icons', 'server', 'stage'],
     while(stage.compute_hex_offset(_max_q, _max_r).y < _stage_height - _padding_y)
       _max_r ++;
 
-    add_action_button(_max_q, _max_r - 1, 'media_toggle', 'play');
+    var _toggle_button =
+        add_action_button(_max_q, _max_r - 1, 'media_toggle', 'play');
+
+    media.add_state_listener(function(state){
+      if (state.state === 'playing') {
+        _toggle_button.icon.removeClass('glyphicon-play').addClass('glyphicon-pause');
+      } else {
+        _toggle_button.icon.removeClass('glyphicon-pause').addClass('glyphicon-play');
+      }
+    });
+
+
     add_action_button(_max_q, _max_r, 'turn_off_screen', 'power');
   }
 
   function add_action_button(q, r, action, icon){
-    add_hex_button(q, r, function(button){
+    return add_hex_button(q, r, function(button){
       function error(message){
         console.error("Error performing button action:", message);
         button.action_error();
@@ -70,7 +81,6 @@ define(['audio', 'constants', 'hex', 'icons', 'server', 'stage'],
     var $icon = null;
     if (icon !== undefined){
       var $icon = icons.create_button_icon(icon);
-      $icon.addClass('button');
       $icon.css({
         top: _offset.y,
         left: _offset.x
@@ -85,6 +95,7 @@ define(['audio', 'constants', 'hex', 'icons', 'server', 'stage'],
       r: r,
       touching: false,
       offset: _offset,
+      icon: $icon,
       touchstart: function(){
         clearTimeout(_error_timeout);
         _button.touching = true;
@@ -114,6 +125,7 @@ define(['audio', 'constants', 'hex', 'icons', 'server', 'stage'],
       }
     };
     _buttons[q + ',' + r] = _button;
+    return _button;
   }
 
   function get_button_by_hex(coordinates){

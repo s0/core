@@ -2,14 +2,21 @@ define(['constants'], function(C){
 
   var _next_request_id = 1;
   var _open_requests = {};
-  var _listeners = {};
+  var _listeners = [];
+
+  // Connection Specific State
   var _socket = null;
+  var _listener_callbacks = {};
 
 
   function init(){
     _socket = new WebSocket(C.SERVER.WS_URL);
     _socket.onopen = on_socket_open;
     _socket.onmessage = on_socket_message;
+  }
+
+  function is_socket_ready(){
+    return _socket !== null && _socket.readyState === WebSocket.OPEN;
   }
 
   function send_message(message){
@@ -33,12 +40,21 @@ define(['constants'], function(C){
   }
 
   function setup_listener(target, callback){
-    send_request('listen', {target: target}, function(payload){
-      _listeners[payload.listener_id] = callback;
+    var _listener = {
+      target: target,
+      callback: callback
+    };
+    _listeners.push(_listener);
+    if (is_socket_ready())
+      do_setup_listener(_listener);
+  }
+
+  function do_setup_listener(listener){
+    send_request('listen', {target: listener.target}, function(payload){
+      _listener_callbacks[payload.listener_id] = listener.callback;
     }, function(message){
       console.error("error requesting listener: ", message);
     });
-
   }
 
   function get_request(id){
@@ -50,12 +66,9 @@ define(['constants'], function(C){
   }
 
   function on_socket_open (event){
-    setup_listener('media', function(payload){
-      console.log('media callback 1: ', payload);
-    });
-    setup_listener('media', function(payload){
-      console.log('media callback 2: ', payload);
-    });
+    // Re initialise connection-specific state
+    _listener_callbacks = {};
+    _listeners.forEach(do_setup_listener);
   }
 
   function on_socket_message (event){
@@ -72,7 +85,7 @@ define(['constants'], function(C){
         get_request(message.request_id).success(message.payload);
         return;
       case "event":
-        var _callback = _listeners[message.listener_id];
+        var _callback = _listener_callbacks[message.listener_id];
         if(_callback === undefined)
           throw new Error("No listener with id: " + id);
         _callback(message.payload);

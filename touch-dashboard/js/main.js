@@ -1,5 +1,5 @@
-require(['buttons', 'clocks', 'constants', 'lock', 'server', 'stage', 'touch', 'util'],
-  function(buttons, clocks, C, lock, server, stage, touch, util){
+require(['buttons', 'clocks', 'constants', 'lock', 'media', 'server', 'stage', 'touch', 'util'],
+  function(buttons, clocks, C, lock, media, server, stage, touch, util){
 
   var _state = {
     mode: C.ENUMS.MODE.LOCKED,
@@ -46,6 +46,7 @@ require(['buttons', 'clocks', 'constants', 'lock', 'server', 'stage', 'touch', '
     lock.init(_state, _elems);
     touch.init(_state, _elems, $(window));
     buttons.init(_state, _elems);
+    media.init();
     server.init();
 
   });
