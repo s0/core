@@ -53,6 +53,7 @@ public class LightingControl {
                 // Colour May have changed, if so, transition
                 if (!currentLightSetting.equals(currentLightValue)) {
                     transitionLight();
+                    continue;
                 }
                 // Sleep for 10 seconds, and re-set the light
                 try {
