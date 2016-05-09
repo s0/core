@@ -6,6 +6,8 @@ import org.slf4j.Logger;
 
 import com.samlanning.core.server.client_protocol.messages.types.ErrorMessage.ErrorType;
 import com.samlanning.core.server.config.ServerConfig;
+import com.samlanning.core.server.lighting.LightingControl;
+import com.samlanning.core.server.lighting.RGBLightValue;
 import com.samlanning.core.server.mpd.MPDMonitor;
 import com.samlanning.core.server.mpd.MPDMonitor.Listener;
 import com.samlanning.core.server.util.Logging;
@@ -16,6 +18,7 @@ public class ServerSwitchboard {
 
     private final ServerConfig config;
     private MPDMonitor mpdMonitor;
+    private LightingControl lightingControl;
 
     public ServerSwitchboard(ServerConfig config) {
         this.config = config;
@@ -23,6 +26,10 @@ public class ServerSwitchboard {
 
     public synchronized void addMPDMonitor(MPDMonitor mpdMonitor) {
         this.mpdMonitor = mpdMonitor;
+    }
+
+    public synchronized void addLightingControl(LightingControl lightingControl) {
+        this.lightingControl = lightingControl;
     }
 
     public synchronized void listenToMPD(MPDMonitor.Listener listener) {
@@ -35,7 +42,7 @@ public class ServerSwitchboard {
         mpdMonitor.removeListener(listener);
     }
 
-    public void performAction(String action) throws ActionError {
+    public synchronized void performAction(String action) throws ActionError {
         switch (action) {
             case "media_toggle":
                 // Toggle Media
@@ -43,11 +50,26 @@ public class ServerSwitchboard {
                 return;
         }
 
+        if (action.startsWith("set_light ")) {
+            String colorString = action.substring(10);
+            RGBLightValue color;
+            try {
+                color = RGBLightValue.fromString(colorString);
+            } catch (IllegalArgumentException e) {
+                throw new ActionError(ErrorType.invalid_request, "Invalid Colour: " + colorString);
+            }
+            if (this.lightingControl == null) {
+                throw new ActionError(ErrorType.internal, "Lighting not setup");
+            } else {
+                this.lightingControl.setColor(color);
+            }
+        }
+
         // Try command line actions
         String command = config.commandLineAction().get(action);
-        if (action != null) {
+        if (command != null) {
             try {
-                Process process = Runtime.getRuntime().exec(command);
+                Runtime.getRuntime().exec(command);
             } catch (IOException e) {
                 log.error("Error running action command process", e);
                 throw new ActionError(ErrorType.internal, "Problem while running Action: " + action);

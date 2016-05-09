@@ -13,6 +13,9 @@ public class ServerConfig {
     private final String mpdHost;
     private final int mpdPort;
 
+    private final String lightingHost;
+    private final int lightingPort;
+
     private final String websocketHost;
     private final int websocketPort;
 
@@ -40,6 +43,14 @@ public class ServerConfig {
             Map<?, ?> mpdConfig = getMap(configRoot, "mpd", true, "mpd");
             this.mpdHost = getRequiredString(mpdConfig, "host", "mpd host");
             this.mpdPort = getPort(mpdConfig, "port", -1, "mpd port");
+        }
+
+        // Lighting Config
+        {
+
+            Map<?, ?> lightingConfig = getMap(configRoot, "lighting", true, "lighting");
+            this.lightingHost = getRequiredString(lightingConfig, "host", "lighting host");
+            this.lightingPort = getPort(lightingConfig, "port", -1, "lighting port");
         }
 
         // WebSocket Config
@@ -128,6 +139,14 @@ public class ServerConfig {
 
     public int mpdPort() {
         return mpdPort;
+    }
+
+    public String lightingHost() {
+        return lightingHost;
+    }
+
+    public int lightingPort() {
+        return lightingPort;
     }
 
     public String websocketHost() {

@@ -17,6 +17,7 @@ import ch.qos.logback.classic.Logger;
 import com.samlanning.core.server.client_protocol.transports.WebSocketTransport;
 import com.samlanning.core.server.config.ConfigurationException;
 import com.samlanning.core.server.config.ServerConfig;
+import com.samlanning.core.server.lighting.LightingControl;
 import com.samlanning.core.server.mpd.MPDMonitor;
 import com.samlanning.core.server.switchboard.ServerSwitchboard;
 import com.samlanning.core.server.util.Logging;
@@ -61,6 +62,15 @@ public class Server {
             monitor.start();
             
             switchboard.addMPDMonitor(monitor);
+        }
+
+        // Setup Lighting
+        {
+            LightingControl lighting =
+                new LightingControl(config.lightingHost(), config.lightingPort());
+            lighting.start();
+
+            switchboard.addLightingControl(lighting);
         }
 
         // Setup Websocket
