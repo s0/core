@@ -42,6 +42,12 @@ public class ServerSwitchboard {
         mpdMonitor.removeListener(listener);
     }
 
+    public synchronized LightingControl lighting() {
+        if (lightingControl == null)
+            throw new RuntimeException("Lighting not setup");
+        return lightingControl;
+    }
+
     public synchronized void performAction(String action) throws ActionError {
         switch (action) {
             case "media_toggle":

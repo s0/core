@@ -40,6 +40,16 @@ public class LightingControl {
         thread.staticBrightness = brightness;
         thread.interrupt();
     }
+
+    public synchronized void setStateStatic(){
+        thread.state = LightState.STATIC;
+        thread.interrupt();
+    }
+
+    public synchronized void setStatePlayingMusic(){
+        thread.state = LightState.MUSIC;
+        thread.interrupt();
+    }
     
     private enum LightState {
         STATIC,

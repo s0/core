@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
+import com.samlanning.core.server.behaviours.Behaviours;
 import com.samlanning.core.server.client_protocol.transports.WebSocketTransport;
 import com.samlanning.core.server.config.ConfigurationException;
 import com.samlanning.core.server.config.ServerConfig;
@@ -47,7 +48,7 @@ public class Server {
             logger.error("Error in config", e);
             return;
         }
-        
+
         ServerSwitchboard switchboard = new ServerSwitchboard(config);
 
         // Setup MPD
@@ -60,7 +61,7 @@ public class Server {
 
             MPDMonitor monitor = new MPDMonitor(builder.build());
             monitor.start();
-            
+
             switchboard.addMPDMonitor(monitor);
         }
 
@@ -80,6 +81,8 @@ public class Server {
                 new WebSocketTransport(switchboard, config.websocketHost(), config.websocketPort());
             webSocket.start();
         }
+
+        Behaviours.initialise(switchboard);
 
     }
 
