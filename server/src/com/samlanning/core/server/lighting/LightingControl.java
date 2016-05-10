@@ -1,8 +1,14 @@
 package com.samlanning.core.server.lighting;
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import org.slf4j.Logger;
 
@@ -33,22 +39,23 @@ public class LightingControl {
 
     public synchronized void setColor(RGBLightValue color) {
         thread.currentLightSetting = color;
-        thread.interrupt();
+        thread.doInterrupt();
     }
 
     public synchronized void setStaticBrightness(float brightness) {
         thread.staticBrightness = brightness;
-        thread.interrupt();
+        thread.doInterrupt();
     }
 
     public synchronized void setStateStatic(){
+        log.info("setting state static");
         thread.state = LightState.STATIC;
-        thread.interrupt();
+        thread.doInterrupt();
     }
 
     public synchronized void setStatePlayingMusic(){
         thread.state = LightState.MUSIC;
-        thread.interrupt();
+        thread.doInterrupt();
     }
     
     private enum LightState {
@@ -65,7 +72,22 @@ public class LightingControl {
         private float musicBrightness = 1.0f;
 
         private OutputStream lightingOutputStream;
+        private InputStream mpdFifoInputStream;
         private long lastHostError;
+        
+        private void doInterrupt(){
+            this.interrupt();
+            if (mpdFifoInputStream != null) {
+                log.info(mpdFifoInputStream.toString());
+                try {
+                    mpdFifoInputStream.close();
+                    mpdFifoInputStream = null;
+                } catch (IOException e) {
+                    // Failure is fine
+                    log.warn("error closing mpd fifo", e);
+                }
+            }
+        }
 
         @Override
         public void run() {
@@ -81,12 +103,8 @@ public class LightingControl {
                     }
                     break;
                 case MUSIC:
-                    // Just turn on (TODO: use music)
-                    RGBLightValue musicColor = currentLightSetting.brightness(musicBrightness);
-                    if (!musicColor.equals(currentLightValue)) {
-                        transitionLight(musicColor);
-                        continue;
-                    }
+                    linkLightToMusic(currentLightSetting.brightness(musicBrightness));
+                    continue;
                 }
                 // Sleep for 10 seconds, and re-set the light
                 try {
@@ -111,6 +129,60 @@ public class LightingControl {
             }
             this.currentLightValue = desiredColour;
             updateLight();
+        }
+
+        private void linkLightToMusic(RGBLightValue colour) {
+            try(FileInputStream is = new FileInputStream("/run/mpd/mpd.fifo")){
+                mpdFifoInputStream = is;
+                log.info("Opened fifo");
+                byte[] bytes = new byte[4]; // buffer to read bytes into
+                ByteBuffer bb = ByteBuffer.allocate(4);
+                bb.order(ByteOrder.LITTLE_ENDIAN);
+                int count = 0;
+                int maxLeft = 0;
+                int maxRight = 0;
+                while (true) {
+                    int bytesRead = 0;
+                    while (bytesRead < bytes.length) {
+                        if(isInterrupted()){
+                            log.info("Interrupted, returning");
+                            return;
+                        }
+                        int ret = is.read(bytes, bytesRead, bytes.length - bytesRead);
+                        if (ret < 0) {
+                            log.info("No more data, returning");
+                            return; // no more data
+                        }
+                        bytesRead += ret;
+                    }
+                    bb.rewind();
+                    bb.put(bytes);
+                    int left = bb.getShort(0);
+                    int right = bb.getShort(2);
+                    maxLeft = Math.max(left, maxLeft);
+                    maxRight = Math.max(right, maxRight);
+                    count ++;
+                    if (count >= 3000){
+                        float brightness = Math.max(maxRight, maxLeft) / (float) Short.MAX_VALUE;
+                        currentLightValue = colour.brightness(brightness);
+                        updateLight();
+                        count = 0;
+                        maxLeft = 0;
+                        maxRight = 0;
+                    }
+                        
+                }
+            } catch (FileNotFoundException e) {
+                log.error("unable to open fifo");
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e1) {
+                    return;
+                }
+            } catch (IOException e) {
+                // IOException may be caused by closing the fifo due to a different interrupt
+                log.info("Stopped using fifo");
+            }
         }
 
         private void updateLight() {
