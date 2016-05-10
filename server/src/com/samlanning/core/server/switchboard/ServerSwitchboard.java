@@ -65,6 +65,22 @@ public class ServerSwitchboard {
             }
         }
 
+        if (action.startsWith("set_light_brightness ")) {
+            String brightnessString = action.substring(21);
+            float brightness;
+            try {
+                brightness = Float.parseFloat(brightnessString);
+            } catch (NumberFormatException e) {
+                throw new ActionError(ErrorType.invalid_request, "Invalid Brightness: "
+                    + brightnessString);
+            }
+            if (this.lightingControl == null) {
+                throw new ActionError(ErrorType.internal, "Lighting not setup");
+            } else {
+                this.lightingControl.setStaticBrightness(brightness);
+            }
+        }
+
         // Try command line actions
         String command = config.commandLineAction().get(action);
         if (command != null) {

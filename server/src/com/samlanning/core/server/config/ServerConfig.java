@@ -8,6 +8,8 @@ import java.util.Map;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
 
+import com.samlanning.core.server.lighting.RGBLightValue;
+
 public class ServerConfig {
 
     private final String mpdHost;
@@ -15,6 +17,7 @@ public class ServerConfig {
 
     private final String lightingHost;
     private final int lightingPort;
+    private final RGBLightValue lightingDefaultColor;
 
     private final String websocketHost;
     private final int websocketPort;
@@ -51,6 +54,8 @@ public class ServerConfig {
             Map<?, ?> lightingConfig = getMap(configRoot, "lighting", true, "lighting");
             this.lightingHost = getRequiredString(lightingConfig, "host", "lighting host");
             this.lightingPort = getPort(lightingConfig, "port", -1, "lighting port");
+            this.lightingDefaultColor = RGBLightValue.fromString(
+                getRequiredString(lightingConfig, "defaultColor", "lighting port"));
         }
 
         // WebSocket Config
@@ -147,6 +152,10 @@ public class ServerConfig {
 
     public int lightingPort() {
         return lightingPort;
+    }
+
+    public RGBLightValue lightingDefaultColor() {
+        return lightingDefaultColor;
     }
 
     public String websocketHost() {

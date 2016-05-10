@@ -69,6 +69,7 @@ public class Server {
             LightingControl lighting =
                 new LightingControl(config.lightingHost(), config.lightingPort());
             lighting.start();
+            lighting.setColor(config.lightingDefaultColor());
 
             switchboard.addLightingControl(lighting);
         }

@@ -36,24 +36,47 @@ public class LightingControl {
         thread.interrupt();
     }
 
+    public synchronized void setStaticBrightness(float brightness) {
+        thread.staticBrightness = brightness;
+        thread.interrupt();
+    }
+    
+    private enum LightState {
+        STATIC,
+        MUSIC
+    }
+
     private class LightingThread extends Thread {
 
-        private RGBLightValue currentLightSetting;
-        private RGBLightValue currentLightValue;
+        private RGBLightValue currentLightSetting = new RGBLightValue(0, 0, 0); 
+        private RGBLightValue currentLightValue = new RGBLightValue(0, 0, 0);
+        private LightState state = LightState.STATIC;
+        private float staticBrightness = 0.0f;
+        private float musicBrightness = 1.0f;
 
         private OutputStream lightingOutputStream;
         private long lastHostError;
 
         @Override
         public void run() {
-            this.currentLightSetting = new RGBLightValue(0, 0, 0);
-            this.currentLightValue = this.currentLightSetting;
             updateLight();
             while (true) {
-                // Colour May have changed, if so, transition
-                if (!currentLightSetting.equals(currentLightValue)) {
-                    transitionLight();
-                    continue;
+                switch(state) {
+                case STATIC:
+                    RGBLightValue staticColor = currentLightSetting.brightness(staticBrightness);
+                    // Colour May have changed, if so, transition
+                    if (!staticColor.equals(currentLightValue)) {
+                        transitionLight(staticColor);
+                        continue;
+                    }
+                    break;
+                case MUSIC:
+                    // Just turn on (TODO: use music)
+                    RGBLightValue musicColor = currentLightSetting.brightness(musicBrightness);
+                    if (!musicColor.equals(currentLightValue)) {
+                        transitionLight(musicColor);
+                        continue;
+                    }
                 }
                 // Sleep for 10 seconds, and re-set the light
                 try {
@@ -64,10 +87,10 @@ public class LightingControl {
             }
         }
 
-        private void transitionLight() {
+        private void transitionLight(RGBLightValue desiredColour) {
             RGBLightValue old = this.currentLightValue;
             for (int i = 0; i <= 100; i++) {
-                this.currentLightValue = old.transition(this.currentLightSetting, i / 100f);
+                this.currentLightValue = old.transition(desiredColour, i / 100f);
                 updateLight();
                 try {
                     Thread.sleep(10);
@@ -76,7 +99,7 @@ public class LightingControl {
                     return;
                 }
             }
-            this.currentLightValue = this.currentLightSetting;
+            this.currentLightValue = desiredColour;
             updateLight();
         }
 
