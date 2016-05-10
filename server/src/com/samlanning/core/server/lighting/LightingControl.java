@@ -12,6 +12,7 @@ import java.nio.ByteOrder;
 
 import org.slf4j.Logger;
 
+import com.samlanning.core.server.util.InterruptableBufferedInputStreamWrapper;
 import com.samlanning.core.server.util.Logging;
 
 public class LightingControl {
@@ -72,20 +73,14 @@ public class LightingControl {
         private float musicBrightness = 1.0f;
 
         private OutputStream lightingOutputStream;
-        private InputStream mpdFifoInputStream;
+        private InterruptableBufferedInputStreamWrapper bisw;
         private long lastHostError;
         
         private void doInterrupt(){
             this.interrupt();
-            if (mpdFifoInputStream != null) {
-                log.info(mpdFifoInputStream.toString());
-                try {
-                    mpdFifoInputStream.close();
-                    mpdFifoInputStream = null;
-                } catch (IOException e) {
-                    // Failure is fine
-                    log.warn("error closing mpd fifo", e);
-                }
+            if (bisw != null) {
+                bisw.interrupt();
+                bisw = null;
             }
         }
 
@@ -133,7 +128,7 @@ public class LightingControl {
 
         private void linkLightToMusic(RGBLightValue colour) {
             try(FileInputStream is = new FileInputStream("/run/mpd/mpd.fifo")){
-                mpdFifoInputStream = is;
+                bisw = new InterruptableBufferedInputStreamWrapper(is, 4);
                 log.info("Opened fifo");
                 byte[] bytes = new byte[4]; // buffer to read bytes into
                 ByteBuffer bb = ByteBuffer.allocate(4);
@@ -142,19 +137,7 @@ public class LightingControl {
                 int maxLeft = 0;
                 int maxRight = 0;
                 while (true) {
-                    int bytesRead = 0;
-                    while (bytesRead < bytes.length) {
-                        if(isInterrupted()){
-                            log.info("Interrupted, returning");
-                            return;
-                        }
-                        int ret = is.read(bytes, bytesRead, bytes.length - bytesRead);
-                        if (ret < 0) {
-                            log.info("No more data, returning");
-                            return; // no more data
-                        }
-                        bytesRead += ret;
-                    }
+                    bisw.read(bytes);
                     bb.rewind();
                     bb.put(bytes);
                     int left = bb.getShort(0);
@@ -179,7 +162,7 @@ public class LightingControl {
                 } catch (InterruptedException e1) {
                     return;
                 }
-            } catch (IOException e) {
+            } catch (InterruptedException | IOException e) {
                 // IOException may be caused by closing the fifo due to a different interrupt
                 log.info("Stopped using fifo");
             }
