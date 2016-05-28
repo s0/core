@@ -11,6 +11,8 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
   var _quater_w = C.HEX_WIDTH / 4 | 0;
   var _half_h = C.HEX_HEIGHT / 2 | 0;
 
+  var overlay_hexagons = [];
+
   var _centre_x;
   var _centre_y;
 
@@ -37,10 +39,13 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
     (function(){
 
       fill_screen_with_hexagons();
+      overlay_hexagons = fill_screen_with_hexagons();
 
     })();
 
     function fill_screen_with_hexagons(){
+        var hexagons = [];
+
         // Work out the min q value
         var _min_q = 0;
         while(compute_hex_offset(_min_q, 0).x > -_half_w)
@@ -53,9 +58,11 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
               _min_r --;
 
             for(var _r = _min_r; compute_hex_offset(_q, _r).y < _stage_height + _half_h; _r++)
-              draw_hexagon_as_required(_q, _r);
+              hexagons.push(draw_hexagon_as_required(_q, _r));
 
         }
+
+        return hexagons;
     }
 
     function draw_hexagon_as_required(q, r){
@@ -72,6 +79,7 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
 
       var $hex = hex.draw_hexagon(compute_hex_offset(q, r), _class);
       _elems.hex_background.append($hex);
+      return $hex;
     }
 
     _on_redraw_listeners.forEach(function(listener){
@@ -107,12 +115,19 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
     }
   }
 
+  function set_light_color(color) {
+    overlay_hexagons.forEach(function(polygon) {
+      polygon.css('stroke', color);
+    });
+  }
+
   return {
     init: init,
     redraw: redraw,
     add_redraw_listener: add_redraw_listener,
     compute_hex_offset: compute_hex_offset,
-    pixel_to_hex: pixel_to_hex
+    pixel_to_hex: pixel_to_hex,
+    set_light_color: set_light_color
   }
 
 });

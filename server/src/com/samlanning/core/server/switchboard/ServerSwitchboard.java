@@ -48,6 +48,12 @@ public class ServerSwitchboard {
         return lightingControl;
     }
 
+    public void listenToLighting(LightingControl.Listener listener) {
+        if (lightingControl == null)
+            throw new RuntimeException("Lighting not setup");
+        lightingControl.addListener(listener);
+    }
+
     public synchronized void performAction(String action) throws ActionError {
         switch (action) {
             case "media_toggle":

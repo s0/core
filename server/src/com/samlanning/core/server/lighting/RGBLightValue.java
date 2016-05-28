@@ -42,4 +42,36 @@ public class RGBLightValue {
         }
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + blue;
+        result = prime * result + green;
+        result = prime * result + red;
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        RGBLightValue other = (RGBLightValue) obj;
+        if (blue != other.blue)
+            return false;
+        if (green != other.green)
+            return false;
+        if (red != other.red)
+            return false;
+        return true;
+    }
+
+    public String toHexString() {
+        return String.format("%02x%02x%02x", this.red, this.green, this.blue);
+    }
+
 }

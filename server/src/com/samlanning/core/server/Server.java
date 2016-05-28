@@ -19,6 +19,7 @@ import com.samlanning.core.server.client_protocol.transports.WebSocketTransport;
 import com.samlanning.core.server.config.ConfigurationException;
 import com.samlanning.core.server.config.ServerConfig;
 import com.samlanning.core.server.lighting.LightingControl;
+import com.samlanning.core.server.lighting.RGBLightValue;
 import com.samlanning.core.server.mpd.MPDMonitor;
 import com.samlanning.core.server.switchboard.ServerSwitchboard;
 import com.samlanning.core.server.util.Logging;
@@ -73,6 +74,24 @@ public class Server {
             lighting.setColor(config.lightingDefaultColor());
 
             switchboard.addLightingControl(lighting);
+            
+            // Lighting Test
+//            new Thread(){
+//                public void run() {
+//                    lighting.setStaticBrightness(1);
+//                    try {
+//                        while (true) {
+//                            lighting.setColor(new RGBLightValue(0, 255, 255));
+//                            Thread.sleep(2000);
+//                            lighting.setColor(new RGBLightValue(0, 0, 255));
+//                            Thread.sleep(2000);
+//                            lighting.setColor(new RGBLightValue(255, 0, 0));
+//                            Thread.sleep(2000);
+//                        }
+//                    } catch (InterruptedException e) {
+//                    }
+//                }
+//            }.start();
         }
 
         // Setup Websocket

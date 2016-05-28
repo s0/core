@@ -15,10 +15,13 @@ import com.samlanning.core.server.client_protocol.messages.types.ErrorMessage.Er
 import com.samlanning.core.server.client_protocol.messages.types.EventMessage;
 import com.samlanning.core.server.client_protocol.messages.types.RequestMessage;
 import com.samlanning.core.server.client_protocol.messages.types.ResponseMessage;
+import com.samlanning.core.server.client_protocol.messages.types.events.LightingEventPayload;
 import com.samlanning.core.server.client_protocol.messages.types.events.MediaEventPayload;
 import com.samlanning.core.server.client_protocol.messages.types.requests.ActionRequestPayload;
 import com.samlanning.core.server.client_protocol.messages.types.requests.ListenRequestPayload;
 import com.samlanning.core.server.client_protocol.messages.types.responses.ListenResponsePayload;
+import com.samlanning.core.server.lighting.LightingControl;
+import com.samlanning.core.server.lighting.RGBLightValue;
 import com.samlanning.core.server.mpd.MPDMonitor;
 import com.samlanning.core.server.switchboard.ActionError;
 import com.samlanning.core.server.switchboard.ServerSwitchboard;
@@ -31,7 +34,10 @@ public class ClientConnection {
     private final ServerSwitchboard switchboard;
     private final ClientConnectionMessageSender sender;
 
-    private final ListenerData listeners = new ListenerData();
+    private final ListenerData<MPDMonitor.Listener> mpdListeners =
+        new ListenerData<MPDMonitor.Listener>();
+    private final ListenerData<LightingControl.Listener> lightingListeners =
+        new ListenerData<LightingControl.Listener>();
 
     public ClientConnection(ServerSwitchboard switchboard, ClientConnectionMessageSender sender) {
         this.switchboard = switchboard;
@@ -80,13 +86,16 @@ public class ClientConnection {
             case "media":
                 listenToMedia(request);
                 return;
+            case "lights":
+                listenToLights(request);
+                return;
         }
         this.sendRequestError(request, ErrorType.invalid_request, "Unknown Target: "
             + payload.target);
     }
 
     private void listenToMedia(RequestMessage request) {
-        final int listenerId = listeners.nextListenerId();
+        final int listenerId = mpdListeners.nextListenerId();
         // Send client the ID of the listener
         ListenResponsePayload payload = new ListenResponsePayload(listenerId);
         this.sender.sendMessageToClient(new ResponseMessage(request.requestId, payload));
@@ -133,8 +142,32 @@ public class ClientConnection {
             }
 
         };
-        listeners.storeListener(mediaListener);
+        mpdListeners.storeListener(mediaListener);
         switchboard.listenToMPD(mediaListener);
+    }
+
+    private void listenToLights(RequestMessage request) {
+        final int listenerId = mpdListeners.nextListenerId();
+        // Send client the ID of the listener
+        ListenResponsePayload payload = new ListenResponsePayload(listenerId);
+        this.sender.sendMessageToClient(new ResponseMessage(request.requestId, payload));
+        // Send listener ID here
+        LightingControl.Listener lightsListener = new LightingControl.Listener() {
+            
+            RGBLightValue lightValue;
+
+            @Override
+            public void newLightValue(RGBLightValue light) {
+               if (!light.equals(lightValue)) {
+                   lightValue = light;
+                   LightingEventPayload payload = new LightingEventPayload(light);
+                   sender.sendMessageToClient(new EventMessage(listenerId, payload));
+               }
+            }
+
+        };
+        lightingListeners.storeListener(lightsListener);
+        switchboard.listenToLighting(lightsListener);
     }
 
     private void handleActionRequest(RequestMessage request) {
@@ -166,20 +199,20 @@ public class ClientConnection {
 
     }
 
-    private static class ListenerData {
+    private static class ListenerData<T> {
 
         private int nextListenerId = 100;
-        private final Collection<MPDMonitor.Listener> mpdListeners = new LinkedList<>();
+        private final Collection<T> mpdListeners = new LinkedList<>();
 
         public synchronized int nextListenerId() {
             return nextListenerId++;
         }
 
-        public synchronized void storeListener(MPDMonitor.Listener listener) {
+        public synchronized void storeListener(T listener) {
             mpdListeners.add(listener);
         }
 
-        public synchronized Collection<MPDMonitor.Listener> mpdListeners() {
+        public synchronized Collection<T> listeners() {
             return new ArrayList<>(mpdListeners);
         }
 
@@ -191,7 +224,7 @@ public class ClientConnection {
     public void transportClosed() {
 
         // Unregister all listeners
-        for (MPDMonitor.Listener listener : listeners.mpdListeners())
+        for (MPDMonitor.Listener listener : mpdListeners.listeners())
             switchboard.removeMPDListener(listener);
 
     }

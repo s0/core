@@ -1,21 +1,22 @@
 package com.samlanning.core.server.lighting;
 
-import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import org.slf4j.Logger;
 
+import com.samlanning.core.server.mpd.MPDMonitor;
 import com.samlanning.core.server.util.InterruptableBufferedInputStreamWrapper;
+import com.samlanning.core.server.util.Listenable;
 import com.samlanning.core.server.util.Logging;
 
-public class LightingControl {
+public class LightingControl extends Listenable<LightingControl.Listener> {
 
     private static final Logger log = Logging.logger(LightingControl.class);
 
@@ -169,14 +170,17 @@ public class LightingControl {
         }
 
         private void updateLight() {
+            LightingControl.this.updateNewListenerVisitor(l -> l.newLightValue(currentLightValue));
+            LightingControl.this.visitListeners(l -> l.newLightValue(currentLightValue));
             if (this.lightingOutputStream == null) {
                 if (this.lastHostError > System.currentTimeMillis() - 5000) {
                     // Don't try and reconnect more than every 5 seconds
                     return;
                 }
                 try {
-                    Socket clientSocket =
-                        new Socket(LightingControl.this.host, LightingControl.this.port);
+                    Socket clientSocket = new Socket();
+                    clientSocket.connect(new InetSocketAddress(LightingControl.this.host,
+                            LightingControl.this.port), 1000);
                     this.lightingOutputStream = clientSocket.getOutputStream();
                     log.info("Connected to light");
                 } catch (IOException e) {
@@ -195,6 +199,10 @@ public class LightingControl {
             }
         }
 
+    }
+
+    public interface Listener {
+        public void newLightValue(RGBLightValue light);
     }
 
 }

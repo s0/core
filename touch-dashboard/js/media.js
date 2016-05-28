@@ -1,4 +1,4 @@
-define(['listeners', 'server'], function(listeners, server){
+define(['listeners', 'server', 'stage'], function(listeners, server, stage){
   'use strict';
 
   var _elems;
@@ -12,6 +12,9 @@ define(['listeners', 'server'], function(listeners, server){
       _listenable.visit(function(callback) {
         callback(_state);
       });
+    });
+    server.setup_listener('lights', function(payload) {
+      stage.set_light_color('#' + payload.value);
     });
     _listenable.add(listeners.single_listener(lock_screen_info_updater));
   }
