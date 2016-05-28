@@ -127,14 +127,24 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
   function set_light_color(color) {
     if (color === '#000000') {
       sheet.rules[0].style.stroke = 'rgba(32, 204, 255, 0.2)';
+      sheet.rules[0].style.transition = 'stroke 1s';
+
       sheet.rules[1].style.stroke = 'rgba(32, 204, 255, 0.2)';
       sheet.rules[1].style.fill = color;
+      sheet.rules[1].style.transition = 'stroke 0.3s, fill 0.3s';
+
       sheet.rules[2].style.color = 'rgba(32, 204, 255, 0.5)';
+      sheet.rules[2].style.transition = 'color 1s';
     } else {
       sheet.rules[0].style.stroke = color;
+      sheet.rules[0].style.transition = 'none';
+
       sheet.rules[1].style.stroke = color;
       sheet.rules[1].style.fill = color;
+      sheet.rules[1].style.transition = 'none';
+
       sheet.rules[2].style.color = color;
+      sheet.rules[2].style.transition = 'none';
     }
     /*
     hexagons.forEach(function(polygon) {
