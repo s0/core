@@ -4,6 +4,14 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
   var _elems,
       _on_redraw_listeners = [];
 
+  var sheet = (function() {
+  	var style = document.createElement("style");
+  	style.appendChild(document.createTextNode(""));
+  	document.head.appendChild(style);
+    style.sheet.insertRule("* { }", 0);
+  	return style.sheet;
+  })();
+
   // cached number values
   var _x_step = C.HEX_WIDTH / 4 * 3 | 0;
   var _y_step = C.HEX_HEIGHT / 2 | 0;
@@ -116,8 +124,18 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
   }
 
   function set_light_color(color) {
+    if (sheet.rules.length === 1) {
+      sheet.deleteRule(0);
+    }
+    if (color !== '#000000') {
+      sheet.insertRule("* { color: " + color + " !important; }", 0);
+    }
     overlay_hexagons.forEach(function(polygon) {
-      polygon.css('stroke', color);
+      if (color === '#000000') {
+        polygon.removeAttr('style');
+      } else {
+        polygon.css('stroke', color);
+      }
     });
   }
 
