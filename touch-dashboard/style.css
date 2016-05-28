@@ -103,7 +103,8 @@ body {
 
 polygon.hex-polygon {
   fill-opacity: 0;
-  stroke: rgba(32, 204, 255, 0.1);
+  stroke-opacity: 0.5;
+  stroke: rgba(32, 204, 255, 0.2);
   stroke-width: 4px;
 }
 
@@ -179,11 +180,12 @@ polygon.hex-polygon.button-inner.touching {
   margin: 0;
   font-size: 20px;
   line-height: 150%;
+  opacity: 0.7;
 }
 
 #stage .widget-centre .media-info p.media-title {
   font-size: 28px;
-  color: rgba(32, 204, 255, 0.5);
+  opacity: 1;
 }
 
 #stage .widget-centre .media-info p.media-album {

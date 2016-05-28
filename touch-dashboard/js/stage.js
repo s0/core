@@ -8,7 +8,9 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
   	var style = document.createElement("style");
   	style.appendChild(document.createTextNode(""));
   	document.head.appendChild(style);
-    style.sheet.insertRule("* { }", 0);
+    style.sheet.insertRule("polygon.hex-polygon { }", 0);
+    style.sheet.insertRule("polygon.hex-polygon.button { }", 1);
+    style.sheet.insertRule("#stage .widget-centre .media-info, .glyphicon.button { }", 2);
   	return style.sheet;
   })();
 
@@ -19,7 +21,7 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
   var _quater_w = C.HEX_WIDTH / 4 | 0;
   var _half_h = C.HEX_HEIGHT / 2 | 0;
 
-  var overlay_hexagons = [];
+  var hexagons = [];
 
   var _centre_x;
   var _centre_y;
@@ -46,8 +48,7 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
     // Draw Hexagons
     (function(){
 
-      fill_screen_with_hexagons();
-      overlay_hexagons = fill_screen_with_hexagons();
+      hexagons = fill_screen_with_hexagons();
 
     })();
 
@@ -124,19 +125,25 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
   }
 
   function set_light_color(color) {
-    if (sheet.rules.length === 1) {
-      sheet.deleteRule(0);
+    if (color === '#000000') {
+      sheet.rules[0].style.stroke = 'rgba(32, 204, 255, 0.2)';
+      sheet.rules[1].style.stroke = 'rgba(32, 204, 255, 0.2)';
+      sheet.rules[1].style.fill = color;
+      sheet.rules[2].style.color = 'rgba(32, 204, 255, 0.5)';
+    } else {
+      sheet.rules[0].style.stroke = color;
+      sheet.rules[1].style.stroke = color;
+      sheet.rules[1].style.fill = color;
+      sheet.rules[2].style.color = color;
     }
-    if (color !== '#000000') {
-      sheet.insertRule("* { color: " + color + " !important; }", 0);
-    }
-    overlay_hexagons.forEach(function(polygon) {
+    /*
+    hexagons.forEach(function(polygon) {
       if (color === '#000000') {
         polygon.removeAttr('style');
       } else {
         polygon.css('stroke', color);
       }
-    });
+    });*/
   }
 
   return {
