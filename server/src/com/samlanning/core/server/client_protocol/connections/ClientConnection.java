@@ -167,7 +167,7 @@ public class ClientConnection {
 
         };
         lightingListeners.storeListener(lightsListener);
-        switchboard.listenToLighting(lightsListener);
+        switchboard.lighting().addListener(lightsListener);
     }
 
     private void handleActionRequest(RequestMessage request) {
@@ -226,6 +226,10 @@ public class ClientConnection {
         // Unregister all listeners
         for (MPDMonitor.Listener listener : mpdListeners.listeners())
             switchboard.removeMPDListener(listener);
+
+        // Unregister all listeners
+        for (LightingControl.Listener listener : lightingListeners.listeners())
+            switchboard.lighting().removeListener(listener);
 
     }
 
