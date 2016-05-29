@@ -149,7 +149,6 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
       sheet.rules[0].style.opacity = brightness;
       sheet.rules[0].style.transition = 'none';
     }
-    console.log("set brightness", brightness);
   }
 
   return {
