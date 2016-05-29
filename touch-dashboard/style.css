@@ -194,7 +194,7 @@ polygon.hex-polygon.button-inner.touching {
 
 #stage .widget-centre .clock .text {
   position: absolute;
-  color: rgba(32, 204, 255, 0.7) !important;
+  color: rgba(32, 204, 255, 0.7);
   font-size: 120px;
   font-family: "Ubuntu", "tr2n";
   line-height: 100%;

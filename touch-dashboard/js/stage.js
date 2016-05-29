@@ -11,6 +11,8 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
     style.sheet.insertRule("polygon.hex-polygon { }", 0);
     style.sheet.insertRule("polygon.hex-polygon.button { }", 1);
     style.sheet.insertRule("#stage .widget-centre .media-info, .glyphicon.button { }", 2);
+    style.sheet.insertRule("#stage .widget-centre .clock .text { }", 3);
+    style.sheet.insertRule("#stage .widget-centre .clock .lock { }", 4);
   	return style.sheet;
   })();
 
@@ -22,6 +24,7 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
   var _half_h = C.HEX_HEIGHT / 2 | 0;
 
   var hexagons = [];
+  var $clock_text;
 
   var _centre_x;
   var _centre_y;
@@ -125,16 +128,26 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
   }
 
   function set_light_color(color) {
+    if (!$clock_text || $clock_text.length === 0) {
+      $clock_text = $('#stage .widget-centre .clock .text');
+    }
     if (color === '#000000') {
       sheet.rules[0].style.stroke = 'rgba(32, 204, 255, 0.2)';
       sheet.rules[0].style.transition = 'stroke 1s';
 
       sheet.rules[1].style.stroke = 'rgba(32, 204, 255, 0.2)';
       sheet.rules[1].style.fill = color;
-      sheet.rules[1].style.transition = 'stroke 0.3s, fill 0.3s';
+      sheet.rules[1].style.transition = 'stroke 1s, fill 1s';
 
       sheet.rules[2].style.color = 'rgba(32, 204, 255, 0.5)';
       sheet.rules[2].style.transition = 'color 1s';
+
+      sheet.rules[3].style.color = 'rgba(32, 204, 255, 0.7)';
+      sheet.rules[3].style.textShadow = '0px 0px 10px rgba(32, 204, 255, 0.7)';
+      sheet.rules[3].style.transition = 'color 1s, text-shadow 1s';
+
+      sheet.rules[4].style.opacity = 1;
+      sheet.rules[4].style.transition = 'opacity 1s';
     } else {
       sheet.rules[0].style.stroke = color;
       sheet.rules[0].style.transition = 'none';
@@ -145,6 +158,13 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
 
       sheet.rules[2].style.color = color;
       sheet.rules[2].style.transition = 'none';
+
+      sheet.rules[3].style.color = color;
+      sheet.rules[3].style.textShadow = '0px 0px 10px ' + color;
+      sheet.rules[3].style.transition = 'none';
+
+      sheet.rules[4].style.opacity = 0;
+      sheet.rules[4].style.transition = 'none';
     }
     /*
     hexagons.forEach(function(polygon) {
