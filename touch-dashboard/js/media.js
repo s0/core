@@ -14,7 +14,10 @@ define(['listeners', 'server', 'stage'], function(listeners, server, stage){
       });
     });
     server.setup_listener('lights', function(payload) {
-      stage.set_light_color('#' + payload.value);
+      if (payload.color)
+        stage.set_light_color('#' + payload.color);
+      if (payload.brightness)
+        stage.set_light_brightness(parseFloat(payload.brightness));
     });
     _listenable.add(listeners.single_listener(lock_screen_info_updater));
   }

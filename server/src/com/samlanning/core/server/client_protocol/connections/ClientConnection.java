@@ -153,16 +153,24 @@ public class ClientConnection {
         this.sender.sendMessageToClient(new ResponseMessage(request.requestId, payload));
         // Send listener ID here
         LightingControl.Listener lightsListener = new LightingControl.Listener() {
-            
-            RGBLightValue lightValue;
+
+            RGBLightValue oldColor = null;
+            float oldBrightness = -1f;
 
             @Override
-            public void newLightValue(RGBLightValue light) {
-               if (!light.equals(lightValue)) {
-                   lightValue = light;
-                   LightingEventPayload payload = new LightingEventPayload(light);
-                   sender.sendMessageToClient(new EventMessage(listenerId, payload));
-               }
+            public void newLightColor(RGBLightValue newColor, float newBrightness) {
+                RGBLightValue color = null;
+                Float brightness = null;
+                if (!newColor.equals(oldColor)) {
+                    color = oldColor = newColor;
+                }
+                if (oldBrightness != newBrightness) {
+                    brightness = oldBrightness = newBrightness;
+                }
+                if (color != null || brightness != null) {
+                    LightingEventPayload payload = new LightingEventPayload(color, brightness);
+                    sender.sendMessageToClient(new EventMessage(listenerId, payload));
+                }
             }
 
         };

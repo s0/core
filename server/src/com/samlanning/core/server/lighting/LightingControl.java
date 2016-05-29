@@ -11,7 +11,6 @@ import java.nio.ByteOrder;
 
 import org.slf4j.Logger;
 
-import com.samlanning.core.server.mpd.MPDMonitor;
 import com.samlanning.core.server.util.InterruptableBufferedInputStreamWrapper;
 import com.samlanning.core.server.util.Listenable;
 import com.samlanning.core.server.util.Logging;
@@ -40,7 +39,7 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
     }
 
     public synchronized void setColor(RGBLightValue color) {
-        thread.currentLightSetting = color;
+        thread.currentLightColorSetting = color;
         thread.doInterrupt();
     }
 
@@ -67,8 +66,9 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
 
     private class LightingThread extends Thread {
 
-        private RGBLightValue currentLightSetting = new RGBLightValue(0, 0, 0); 
-        private RGBLightValue currentLightValue = new RGBLightValue(0, 0, 0);
+        private RGBLightValue currentLightColorSetting = new RGBLightValue(0, 0, 0); 
+        private RGBLightValue currentLightColorValue = new RGBLightValue(0, 0, 0);
+        private float currentLightBrightness = 1f;
         private LightState state = LightState.STATIC;
         private float staticBrightness = 0.0f;
         private float musicBrightness = 1.0f;
@@ -91,15 +91,15 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
             while (true) {
                 switch(state) {
                 case STATIC:
-                    RGBLightValue staticColor = currentLightSetting.brightness(staticBrightness);
                     // Colour May have changed, if so, transition
-                    if (!staticColor.equals(currentLightValue)) {
-                        transitionLight(staticColor);
+                    if (!currentLightColorSetting.equals(currentLightColorValue)
+                        || currentLightBrightness != staticBrightness) {
+                        transitionLight(currentLightColorSetting, staticBrightness);
                         continue;
                     }
                     break;
                 case MUSIC:
-                    linkLightToMusic(currentLightSetting.brightness(musicBrightness));
+                    linkLightToMusic(musicBrightness);
                     continue;
                 }
                 // Sleep for 10 seconds, and re-set the light
@@ -111,10 +111,14 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
             }
         }
 
-        private void transitionLight(RGBLightValue desiredColour) {
-            RGBLightValue old = this.currentLightValue;
+        private void transitionLight(RGBLightValue desiredColour, float brightness) {
+            RGBLightValue oldColor = this.currentLightColorValue;
+            float oldBrightness = this.currentLightBrightness;
             for (int i = 0; i <= 100; i++) {
-                this.currentLightValue = old.transition(desiredColour, i / 100f);
+                float transitionAmt = (i / 100f);
+                this.currentLightColorValue = oldColor.transition(desiredColour, transitionAmt);
+                this.currentLightBrightness =
+                    transitionAmt * brightness + (1f - transitionAmt) * oldBrightness;
                 updateLight();
                 try {
                     Thread.sleep(10);
@@ -123,14 +127,15 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
                     return;
                 }
             }
-            this.currentLightValue = desiredColour;
+            this.currentLightColorValue = desiredColour;
+            this.currentLightBrightness = brightness;
             updateLight();
         }
 
-        private void linkLightToMusic(RGBLightValue colour) {
+        private void linkLightToMusic(float brightness) {
+            currentLightColorValue = currentLightColorSetting;
             try(FileInputStream is = new FileInputStream("/run/mpd/mpd.fifo")){
                 bisw = new InterruptableBufferedInputStreamWrapper(is, 4);
-                log.info("Opened fifo");
                 byte[] bytes = new byte[4]; // buffer to read bytes into
                 ByteBuffer bb = ByteBuffer.allocate(4);
                 bb.order(ByteOrder.LITTLE_ENDIAN);
@@ -146,9 +151,9 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
                     maxLeft = Math.max(left, maxLeft);
                     maxRight = Math.max(right, maxRight);
                     count ++;
-                    if (count >= 3000){
-                        float brightness = Math.max(maxRight, maxLeft) / (float) Short.MAX_VALUE;
-                        currentLightValue = colour.brightness(brightness);
+                    if (count >= 3000) {
+                        currentLightBrightness =
+                            Math.max(maxRight, maxLeft) / (float) Short.MAX_VALUE * brightness;
                         updateLight();
                         count = 0;
                         maxLeft = 0;
@@ -170,8 +175,10 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
         }
 
         private void updateLight() {
-            LightingControl.this.updateNewListenerVisitor(l -> l.newLightValue(currentLightValue));
-            LightingControl.this.visitListeners(l -> l.newLightValue(currentLightValue));
+            Visitor<Listener> visitor =
+                l -> l.newLightColor(currentLightColorValue, currentLightBrightness);
+            LightingControl.this.updateNewListenerVisitor(visitor);
+            LightingControl.this.visitListeners(visitor);
             if (this.lightingOutputStream == null) {
                 if (this.lastHostError > System.currentTimeMillis() - 5000) {
                     // Don't try and reconnect more than every 5 seconds
@@ -190,8 +197,9 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
                 }
             }
             try {
-                lightingOutputStream.write(new byte[] { (byte) currentLightValue.red,
-                    (byte) currentLightValue.green, (byte) currentLightValue.blue, (byte) 255 });
+                RGBLightValue light = currentLightColorValue.brightness(currentLightBrightness);
+                lightingOutputStream.write(new byte[] { (byte) light.red, (byte) light.green,
+                    (byte) light.blue, (byte) 255 });
                 lightingOutputStream.flush();
             } catch (IOException e) {
                 log.warn("Error updating light, resetting");
@@ -202,7 +210,7 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
     }
 
     public interface Listener {
-        public void newLightValue(RGBLightValue light);
+        public void newLightColor(RGBLightValue color, float brightness);
     }
 
 }

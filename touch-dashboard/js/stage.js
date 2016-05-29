@@ -24,7 +24,6 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
   var _half_h = C.HEX_HEIGHT / 2 | 0;
 
   var hexagons = [];
-  var $clock_text;
 
   var _centre_x;
   var _centre_y;
@@ -34,6 +33,7 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
 
     $window.resize(redraw);
     redraw();
+    set_light_color('#f00');
   }
 
   function redraw(){
@@ -128,52 +128,28 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
   }
 
   function set_light_color(color) {
-    if (!$clock_text || $clock_text.length === 0) {
-      $clock_text = $('#stage .widget-centre .clock .text');
-    }
-    if (color === '#000000') {
-      sheet.rules[0].style.stroke = 'rgba(32, 204, 255, 0.2)';
-      sheet.rules[0].style.transition = 'stroke 1s';
+    sheet.rules[0].style.stroke = color;
 
-      sheet.rules[1].style.stroke = 'rgba(32, 204, 255, 0.2)';
-      sheet.rules[1].style.fill = color;
-      sheet.rules[1].style.transition = 'stroke 1s, fill 1s';
+    sheet.rules[1].style.stroke = color;
+    sheet.rules[1].style.fill = color;
 
-      sheet.rules[2].style.color = 'rgba(32, 204, 255, 0.5)';
-      sheet.rules[2].style.transition = 'color 1s';
+    sheet.rules[2].style.color = color;
 
-      sheet.rules[3].style.color = 'rgba(32, 204, 255, 0.7)';
-      sheet.rules[3].style.textShadow = '0px 0px 10px rgba(32, 204, 255, 0.7)';
-      sheet.rules[3].style.transition = 'color 1s, text-shadow 1s';
+    sheet.rules[3].style.color = color;
+    sheet.rules[3].style.textShadow = '0px 0px 10px ' + color;
 
-      sheet.rules[4].style.opacity = 1;
-      sheet.rules[4].style.transition = 'opacity 1s';
+    sheet.rules[4].style.opacity = 0;
+  }
+
+  function set_light_brightness(brightness) {
+    if (brightness === 0.0) {
+      sheet.rules[0].style.opacity = 0.6;
+      sheet.rules[0].style.transition = 'opacity 1s';
     } else {
-      sheet.rules[0].style.stroke = color;
+      sheet.rules[0].style.opacity = brightness;
       sheet.rules[0].style.transition = 'none';
-
-      sheet.rules[1].style.stroke = color;
-      sheet.rules[1].style.fill = color;
-      sheet.rules[1].style.transition = 'none';
-
-      sheet.rules[2].style.color = color;
-      sheet.rules[2].style.transition = 'none';
-
-      sheet.rules[3].style.color = color;
-      sheet.rules[3].style.textShadow = '0px 0px 10px ' + color;
-      sheet.rules[3].style.transition = 'none';
-
-      sheet.rules[4].style.opacity = 0;
-      sheet.rules[4].style.transition = 'none';
     }
-    /*
-    hexagons.forEach(function(polygon) {
-      if (color === '#000000') {
-        polygon.removeAttr('style');
-      } else {
-        polygon.css('stroke', color);
-      }
-    });*/
+    console.log("set brightness", brightness);
   }
 
   return {
@@ -182,7 +158,8 @@ define(['constants', 'hex', 'util'], function(C, hex, util){
     add_redraw_listener: add_redraw_listener,
     compute_hex_offset: compute_hex_offset,
     pixel_to_hex: pixel_to_hex,
-    set_light_color: set_light_color
+    set_light_color: set_light_color,
+    set_light_brightness: set_light_brightness
   }
 
 });

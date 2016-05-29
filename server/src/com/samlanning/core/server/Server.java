@@ -92,6 +92,20 @@ public class Server {
 //                    }
 //                }
 //            }.start();
+//            new Thread(){
+//                public void run() {
+//                    lighting.setStaticBrightness(1);
+//                    try {
+//                        while (true) {
+//                            Thread.sleep(1000);
+//                            lighting.setStaticBrightness(0f);
+//                            Thread.sleep(1000);
+//                            lighting.setStaticBrightness(1f);
+//                        }
+//                    } catch (InterruptedException e) {
+//                    }
+//                }
+//            }.start();
         }
 
         // Setup Websocket
