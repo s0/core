@@ -106,7 +106,7 @@ public class ClientConnection {
             private MPDSong song;
 
             @Override
-            public synchronized void statusChanged(Status status) {
+            public synchronized void statusChanged(Status status, long songStartTime) {
                 this.status = status;
                 sendEvent();
             }

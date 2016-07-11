@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import org.bff.javampd.song.MPDSong;
 import org.slf4j.Logger;
 
 import com.samlanning.core.server.util.InterruptableBufferedInputStreamWrapper;
@@ -54,8 +55,14 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
         thread.doInterrupt();
     }
 
-    public synchronized void setStatePlayingMusic(){
+    public synchronized void setStatePlayingMusic(long songStartTime) {
+        thread.songStartTime = songStartTime;
         thread.state = LightState.MUSIC;
+        thread.doInterrupt();
+    }
+
+    public synchronized void setCurrentSong(MPDSong song){
+        thread.currentSong = song;
         thread.doInterrupt();
     }
     
@@ -72,6 +79,9 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
         private LightState state = LightState.STATIC;
         private float staticBrightness = 0.0f;
         private float musicBrightness = 1.0f;
+        
+        private MPDSong currentSong;
+        private long songStartTime;
 
         private OutputStream lightingOutputStream;
         private InterruptableBufferedInputStreamWrapper bisw;
@@ -134,6 +144,16 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
 
         private void linkLightToMusic(float brightness) {
             currentLightColorValue = currentLightColorSetting;
+            if (
+                this.currentSong != null &&
+                this.currentSong.getArtistName().equals("Feed Me") &&
+                this.currentSong.getTitle().equals("Onstuh"))
+                this.playCueSheet();
+            else
+                this.playFromFifo(brightness);
+        }
+        
+        private void playFromFifo(float brightness) {
             try(FileInputStream is = new FileInputStream("/run/mpd/mpd.fifo")){
                 bisw = new InterruptableBufferedInputStreamWrapper(is, 4);
                 byte[] bytes = new byte[4]; // buffer to read bytes into
@@ -171,6 +191,22 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
             } catch (InterruptedException | IOException e) {
                 // IOException may be caused by closing the fifo due to a different interrupt
                 log.info("Stopped using fifo");
+            }
+        }
+
+        private void playCueSheet() {
+            System.out.println("playing cue sheet");
+            
+            long startTime = this.songStartTime;
+            while(true) {
+                try {
+                    Thread.sleep(500);
+                    long rel = System.currentTimeMillis() - startTime;
+                    System.out.println("t:" + rel);
+                    System.out.println(currentSong);
+                } catch (InterruptedException e1) {
+                    return;
+                }
             }
         }
 

@@ -18,10 +18,10 @@ public class Behaviours {
         switchboard.listenToMPD(new Listener() {
 
             @Override
-            public void statusChanged(Status status) {
+            public void statusChanged(Status status, long songStartTime) {
                 switch (status) {
                     case STATUS_PLAYING:
-                        switchboard.lighting().setStatePlayingMusic();
+                        switchboard.lighting().setStatePlayingMusic(songStartTime);
                         break;
                     case STATUS_PAUSED:
                     case STATUS_STOPPED:
@@ -31,7 +31,9 @@ public class Behaviours {
             }
 
             @Override
-            public void songChanged(MPDSong song) {}
+            public void songChanged(MPDSong song) {
+                switchboard.lighting().setCurrentSong(song);
+            }
 
         });
     }
