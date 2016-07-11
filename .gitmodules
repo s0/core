@@ -1,0 +1,3 @@
+[submodule "server/javampd"]
+	path = server/javampd
+	url = https://github.com/samlanning/javampd.git
