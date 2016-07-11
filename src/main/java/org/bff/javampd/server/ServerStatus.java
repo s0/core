@@ -43,6 +43,13 @@ public interface ServerStatus {
     long getElapsedTime();
 
     /**
+     * Returns the elapsed time of the currently playing song in milliseconds
+     *
+     * @return elapsed time of the song
+     */
+    long getElapsedTimeMillis();
+
+    /**
      * Returns the total time of the currently playing song
      *
      * @return total time of the song

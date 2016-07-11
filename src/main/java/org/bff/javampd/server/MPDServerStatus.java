@@ -113,6 +113,11 @@ public class MPDServerStatus implements ServerStatus {
     }
 
     @Override
+    public long getElapsedTimeMillis() {
+        return Math.round(Double.parseDouble(getStatus(Status.ELAPSED)) * 1000);
+    }
+
+    @Override
     public long getTotalTime() {
         return lookupTime(TimeType.TOTAL);
     }

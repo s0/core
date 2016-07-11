@@ -207,6 +207,13 @@ public interface Player {
     long getElapsedTime();
 
     /**
+     * Returns the elapsed time of the current song in milliseconds
+     *
+     * @return the elapsed time of the song in milliseconds
+     */
+    long getElapsedTimeMillis();
+
+    /**
      * Returns the total time of the current song in seconds.
      *
      * @return the elapsed time of the song in seconds

@@ -45,6 +45,10 @@ public enum Status {
      */
     TIME("time:"),
     /**
+     * Total time elapsed within the current song, but with higher resolution.
+     */
+    ELAPSED("elapsed:"),
+    /**
      * instantaneous bitrate in kbps
      */
     BITRATE("bitrate:"),

@@ -265,7 +265,11 @@ public class MPDPlayer implements Player {
     @Override
     public long getElapsedTime() {
         return serverStatus.getElapsedTime();
+    }
 
+    @Override
+    public long getElapsedTimeMillis() {
+        return serverStatus.getElapsedTimeMillis();
     }
 
     @Override
