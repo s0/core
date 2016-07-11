@@ -1,10 +1,9 @@
 package com.samlanning.core.server.mpd;
 
-import org.bff.javampd.MPD;
-import org.bff.javampd.Player;
-import org.bff.javampd.Player.Status;
-import org.bff.javampd.exception.MPDPlayerException;
-import org.bff.javampd.objects.MPDSong;
+import org.bff.javampd.player.Player;
+import org.bff.javampd.player.Player.Status;
+import org.bff.javampd.server.MPD;
+import org.bff.javampd.song.MPDSong;
 import org.slf4j.Logger;
 
 import com.samlanning.core.server.util.Listenable;
@@ -67,22 +66,17 @@ public class MPDMonitor extends Listenable<MPDMonitor.Listener> {
         public void run() {
             Player player = mpd.getPlayer();
             while (true) {
-                try {
-                    final Status status = player.getStatus();
-                    final MPDSong song = player.getCurrentSong();
-                    if (status != lastStatus) {
-                        MPDMonitor.this.updateNewListenerVisitor(l -> l.updateBoth(status, song));
-                        MPDMonitor.this.visitListeners(l -> l.statusChanged(status));
-                        lastStatus = status;
-                    }
-                    if (song != lastSong && (song == null || !song.equals(lastSong))) {
-                        MPDMonitor.this.updateNewListenerVisitor(l -> l.updateBoth(status, song));
-                        MPDMonitor.this.visitListeners(l -> l.songChanged(song));
-                        lastSong = song;
-                    }
-                } catch (MPDPlayerException e) {
-                    // Wait until nes
-                    logger.warn("Exception getting status", e);
+                final Status status = player.getStatus();
+                final MPDSong song = player.getCurrentSong();
+                if (status != lastStatus) {
+                    MPDMonitor.this.updateNewListenerVisitor(l -> l.updateBoth(status, song));
+                    MPDMonitor.this.visitListeners(l -> l.statusChanged(status));
+                    lastStatus = status;
+                }
+                if (song != lastSong && (song == null || !song.equals(lastSong))) {
+                    MPDMonitor.this.updateNewListenerVisitor(l -> l.updateBoth(status, song));
+                    MPDMonitor.this.visitListeners(l -> l.songChanged(song));
+                    lastSong = song;
                 }
                 try {
                     Thread.sleep(DELAY);
@@ -109,17 +103,12 @@ public class MPDMonitor extends Listenable<MPDMonitor.Listener> {
     }
 
     public boolean toggle() {
-        try {
-            if (mpd.getPlayer().getStatus() == Status.STATUS_PLAYING)
-                mpd.getPlayer().pause();
-            else
-                mpd.getPlayer().play();
-            thread.refresh();
-            return true;
-        } catch (MPDPlayerException e) {
-            logger.warn("Error performing toggle action", e);
-            return false;
-        }
+        if (mpd.getPlayer().getStatus() == Status.STATUS_PLAYING)
+            mpd.getPlayer().pause();
+        else
+            mpd.getPlayer().play();
+        thread.refresh();
+        return true;
     }
 
 }

@@ -1,7 +1,7 @@
 package com.samlanning.core.server.behaviours;
 
-import org.bff.javampd.Player.Status;
-import org.bff.javampd.objects.MPDSong;
+import org.bff.javampd.player.Player.Status;
+import org.bff.javampd.song.MPDSong;
 import org.slf4j.Logger;
 
 import com.samlanning.core.server.mpd.MPDMonitor.Listener;

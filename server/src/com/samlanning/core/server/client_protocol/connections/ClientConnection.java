@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import org.bff.javampd.Player.Status;
-import org.bff.javampd.objects.MPDSong;
+import org.bff.javampd.player.Player.Status;
+import org.bff.javampd.song.MPDSong;
 import org.slf4j.Logger;
 
 import com.samlanning.core.server.client_protocol.messages.JsonMessage;

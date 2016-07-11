@@ -6,9 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-import org.bff.javampd.MPD;
-import org.bff.javampd.Player.Status;
-import org.bff.javampd.exception.MPDConnectionException;
+import org.bff.javampd.server.MPD;
+import org.bff.javampd.server.MPDConnectionException;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Level;
@@ -19,7 +18,6 @@ import com.samlanning.core.server.client_protocol.transports.WebSocketTransport;
 import com.samlanning.core.server.config.ConfigurationException;
 import com.samlanning.core.server.config.ServerConfig;
 import com.samlanning.core.server.lighting.LightingControl;
-import com.samlanning.core.server.lighting.RGBLightValue;
 import com.samlanning.core.server.mpd.MPDMonitor;
 import com.samlanning.core.server.switchboard.ServerSwitchboard;
 import com.samlanning.core.server.util.Logging;
