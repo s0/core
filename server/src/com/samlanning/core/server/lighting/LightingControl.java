@@ -178,7 +178,6 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
 
                 @Override
                 public void handle(LightFlash event) {
-                    System.out.println("flash! "+ event.duration);
                     light.flashLight(event.color, 1f, event.duration);
                 }
                 
@@ -189,9 +188,8 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
             long startTime = this.songStartTime;
             try {
                 player.playAndWait(startTime);
-                // Player finished, wait until interrupted
-                while (true)
-                    Thread.sleep(10000);
+                // Player finished, use fifo until finished
+                this.playFromFifo(musicBrightness);
             } catch (InterruptedException e1) {
                 player.stop();
                 return;
