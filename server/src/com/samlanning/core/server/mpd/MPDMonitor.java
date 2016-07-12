@@ -50,10 +50,12 @@ public class MPDMonitor extends Listenable<MPDMonitor.Listener> {
     private class T extends Thread {
 
         private static final int DELAY = 400;
+        private static final int MAX_START_TIME_DIFFERENCE_MILLIS = 200;
 
         private final MPD mpd;
         private Status lastStatus;
         private MPDSong lastSong;
+        private long lastStartTime;
 
         boolean refreshInturrupt = false;
 
@@ -71,15 +73,23 @@ public class MPDMonitor extends Listenable<MPDMonitor.Listener> {
                 final long elapsed = player.getElapsedTimeMillis();
                 final long now = System.currentTimeMillis();
                 final long songStartTime = now - elapsed;
-                if (status != lastStatus) {
+                // Update status if either:
+                // - the status has changed
+                // - the song start time has significantly changed since last calculated
+                if (status != lastStatus ||
+                    (status == Status.STATUS_PLAYING && (
+                    songStartTime < lastStartTime - MAX_START_TIME_DIFFERENCE_MILLIS ||
+                    songStartTime > lastStartTime + MAX_START_TIME_DIFFERENCE_MILLIS))) {
                     MPDMonitor.this.updateNewListenerVisitor(l -> l.updateBoth(status, songStartTime, song));
                     MPDMonitor.this.visitListeners(l -> l.statusChanged(status, songStartTime));
                     lastStatus = status;
+                    lastStartTime = songStartTime;
                 }
                 if (song != lastSong && (song == null || !song.equals(lastSong))) {
                     MPDMonitor.this.updateNewListenerVisitor(l -> l.updateBoth(status, songStartTime, song));
                     MPDMonitor.this.visitListeners(l -> l.songChanged(song, songStartTime));
                     lastSong = song;
+                    lastStartTime = songStartTime;
                 }
                 try {
                     Thread.sleep(DELAY);
