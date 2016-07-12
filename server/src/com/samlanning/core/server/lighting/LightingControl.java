@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import com.samlanning.core.server.util.InterruptableBufferedInputStreamWrapper;
 import com.samlanning.core.server.util.Listenable;
 import com.samlanning.core.server.util.Logging;
+import com.samlanning.synesthesia.player.EventPlayer;
 
 public class LightingControl extends Listenable<LightingControl.Listener> {
 
@@ -196,6 +197,8 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
 
         private void playCueSheet() {
             System.out.println("playing cue sheet");
+            
+            EventPlayer<Object> player = new EventPlayer<>();
             
             long startTime = this.songStartTime;
             while(true) {

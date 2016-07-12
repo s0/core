@@ -1,1 +1,1 @@
-include ':javampd', ':server'
+include ':javampd', ':synesthesia', ':server'
