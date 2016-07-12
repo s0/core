@@ -10,6 +10,8 @@ import java.util.Iterator;
  */
 public class EventPlayer<Event> {
 
+    private static final long SKIP_THRESHOLD_MILLIS = 5;
+
     private final EventSheet<Event> sheet;
     private PlayThread playThread;
 
@@ -67,6 +69,14 @@ public class EventPlayer<Event> {
 
                     // currentEventMarker will be set here
                     long currentTime = System.currentTimeMillis() - playerStartTime;
+
+                    // Check if we need to skip
+                    if (currentEventMarker.time + SKIP_THRESHOLD_MILLIS <= currentTime) {
+                        currentEventMarker = null;
+                        continue;
+                    }
+
+                    // Check if we should trigger event
                     if (currentEventMarker.time <= currentTime) {
                         // Fire event!
                         this.playEvent(currentEventMarker.event);
