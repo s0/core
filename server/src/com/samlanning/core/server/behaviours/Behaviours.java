@@ -31,8 +31,8 @@ public class Behaviours {
             }
 
             @Override
-            public void songChanged(MPDSong song) {
-                switchboard.lighting().setCurrentSong(song);
+            public void songChanged(MPDSong song, long songStartTime) {
+                switchboard.lighting().setCurrentSong(song, songStartTime);
             }
 
         });

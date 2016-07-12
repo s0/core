@@ -112,7 +112,7 @@ public class ClientConnection {
             }
 
             @Override
-            public synchronized void songChanged(MPDSong song) {
+            public synchronized void songChanged(MPDSong song, long songStartTime) {
                 this.song = song;
                 sendEvent();
             }

@@ -8,6 +8,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
+import java.util.List;
 
 import org.bff.javampd.song.MPDSong;
 import org.slf4j.Logger;
@@ -15,7 +17,9 @@ import org.slf4j.Logger;
 import com.samlanning.core.server.util.InterruptableBufferedInputStreamWrapper;
 import com.samlanning.core.server.util.Listenable;
 import com.samlanning.core.server.util.Logging;
+import com.samlanning.synesthesia.player.EventMarker;
 import com.samlanning.synesthesia.player.EventPlayer;
+import com.samlanning.synesthesia.player.EventSheet;
 
 public class LightingControl extends Listenable<LightingControl.Listener> {
 
@@ -50,7 +54,7 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
         thread.doInterrupt();
     }
 
-    public synchronized void setStateStatic(){
+    public synchronized void setStateStatic() {
         log.info("setting state static");
         thread.state = LightState.STATIC;
         thread.doInterrupt();
@@ -62,11 +66,12 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
         thread.doInterrupt();
     }
 
-    public synchronized void setCurrentSong(MPDSong song){
+    public synchronized void setCurrentSong(MPDSong song, long songStartTime) {
+        thread.songStartTime = songStartTime;
         thread.currentSong = song;
         thread.doInterrupt();
     }
-    
+
     private enum LightState {
         STATIC,
         MUSIC
@@ -74,21 +79,21 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
 
     private class LightingThread extends Thread {
 
-        private RGBLightValue currentLightColorSetting = new RGBLightValue(0, 0, 0); 
+        private RGBLightValue currentLightColorSetting = new RGBLightValue(0, 0, 0);
         private RGBLightValue currentLightColorValue = new RGBLightValue(0, 0, 0);
         private float currentLightBrightness = 1f;
         private LightState state = LightState.STATIC;
         private float staticBrightness = 0.0f;
         private float musicBrightness = 1.0f;
-        
+
         private MPDSong currentSong;
         private long songStartTime;
 
         private OutputStream lightingOutputStream;
         private InterruptableBufferedInputStreamWrapper bisw;
         private long lastHostError;
-        
-        private void doInterrupt(){
+
+        private void doInterrupt() {
             this.interrupt();
             if (bisw != null) {
                 bisw.interrupt();
@@ -100,18 +105,18 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
         public void run() {
             updateLight();
             while (true) {
-                switch(state) {
-                case STATIC:
-                    // Colour May have changed, if so, transition
-                    if (!currentLightColorSetting.equals(currentLightColorValue)
-                        || currentLightBrightness != staticBrightness) {
-                        transitionLight(currentLightColorSetting, staticBrightness);
+                switch (state) {
+                    case STATIC:
+                        // Colour May have changed, if so, transition
+                        if (!currentLightColorSetting.equals(currentLightColorValue)
+                            || currentLightBrightness != staticBrightness) {
+                            transitionLight(currentLightColorSetting, staticBrightness);
+                            continue;
+                        }
+                        break;
+                    case MUSIC:
+                        linkLightToMusic(musicBrightness);
                         continue;
-                    }
-                    break;
-                case MUSIC:
-                    linkLightToMusic(musicBrightness);
-                    continue;
                 }
                 // Sleep for 10 seconds, and re-set the light
                 try {
@@ -145,17 +150,15 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
 
         private void linkLightToMusic(float brightness) {
             currentLightColorValue = currentLightColorSetting;
-            if (
-                this.currentSong != null &&
-                this.currentSong.getArtistName().equals("Feed Me") &&
-                this.currentSong.getTitle().equals("Onstuh"))
+            if (this.currentSong != null && this.currentSong.getArtistName().equals("Feed Me")
+                && this.currentSong.getTitle().equals("Onstuh"))
                 this.playCueSheet();
             else
                 this.playFromFifo(brightness);
         }
-        
+
         private void playFromFifo(float brightness) {
-            try(FileInputStream is = new FileInputStream("/run/mpd/mpd.fifo")){
+            try (FileInputStream is = new FileInputStream("/run/mpd/mpd.fifo")) {
                 bisw = new InterruptableBufferedInputStreamWrapper(is, 4);
                 byte[] bytes = new byte[4]; // buffer to read bytes into
                 ByteBuffer bb = ByteBuffer.allocate(4);
@@ -171,7 +174,7 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
                     int right = bb.getShort(2);
                     maxLeft = Math.max(left, maxLeft);
                     maxRight = Math.max(right, maxRight);
-                    count ++;
+                    count++;
                     if (count >= 3000) {
                         currentLightBrightness =
                             Math.max(maxRight, maxLeft) / (float) Short.MAX_VALUE * brightness;
@@ -180,7 +183,7 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
                         maxLeft = 0;
                         maxRight = 0;
                     }
-                        
+
                 }
             } catch (FileNotFoundException e) {
                 log.error("unable to open fifo");
@@ -190,26 +193,26 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
                     return;
                 }
             } catch (InterruptedException | IOException e) {
-                // IOException may be caused by closing the fifo due to a different interrupt
+                // IOException may be caused by closing the fifo due to a
+                // different interrupt
                 log.info("Stopped using fifo");
             }
         }
 
         private void playCueSheet() {
             System.out.println("playing cue sheet");
-            
-            EventPlayer<Object> player = new EventPlayer<>();
-            
+
+            EventPlayer<String> player = new EventPlayer<>(getDummyEventSheet());
+
             long startTime = this.songStartTime;
-            while(true) {
-                try {
-                    Thread.sleep(500);
-                    long rel = System.currentTimeMillis() - startTime;
-                    System.out.println("t:" + rel);
-                    System.out.println(currentSong);
-                } catch (InterruptedException e1) {
-                    return;
-                }
+            try {
+                player.playAndWait(startTime);
+                // Player finished, wait until interrupted
+                while (true)
+                    Thread.sleep(10000);
+            } catch (InterruptedException e1) {
+                player.stop();
+                return;
             }
         }
 
@@ -226,7 +229,7 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
                 try {
                     Socket clientSocket = new Socket();
                     clientSocket.connect(new InetSocketAddress(LightingControl.this.host,
-                            LightingControl.this.port), 1000);
+                        LightingControl.this.port), 1000);
                     this.lightingOutputStream = clientSocket.getOutputStream();
                     log.info("Connected to light");
                 } catch (IOException e) {
@@ -250,6 +253,21 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
 
     public interface Listener {
         public void newLightColor(RGBLightValue color, float brightness);
+    }
+
+    private static EventSheet<String> getDummyEventSheet() {
+
+        List<EventMarker<String>> markers = Arrays.<EventMarker<String>>asList(
+            new EventMarker<>(123, "123ms"),
+            new EventMarker<>(143, "143ms"),
+            new EventMarker<>(343, "343ms"),
+            new EventMarker<>(1000, "1s"),
+            new EventMarker<>(2000, "2s"),
+            new EventMarker<>(4000, "4s"),
+            new EventMarker<>(4000, "4s")
+            );
+
+        return new EventSheet<>(markers);
     }
 
 }

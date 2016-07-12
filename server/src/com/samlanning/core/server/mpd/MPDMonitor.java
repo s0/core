@@ -39,11 +39,11 @@ public class MPDMonitor extends Listenable<MPDMonitor.Listener> {
     public interface Listener {
         public void statusChanged(Status status, long songStartTime);
 
-        public void songChanged(MPDSong song);
+        public void songChanged(MPDSong song, long songStartTime);
 
         default void updateBoth(Status status, long songStartTime, MPDSong song) {
             statusChanged(status, songStartTime);
-            songChanged(song);
+            songChanged(song, songStartTime);
         }
     }
 
@@ -78,7 +78,7 @@ public class MPDMonitor extends Listenable<MPDMonitor.Listener> {
                 }
                 if (song != lastSong && (song == null || !song.equals(lastSong))) {
                     MPDMonitor.this.updateNewListenerVisitor(l -> l.updateBoth(status, songStartTime, song));
-                    MPDMonitor.this.visitListeners(l -> l.songChanged(song));
+                    MPDMonitor.this.visitListeners(l -> l.songChanged(song, songStartTime));
                     lastSong = song;
                 }
                 try {
