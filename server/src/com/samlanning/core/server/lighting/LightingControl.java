@@ -80,8 +80,6 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
     private class LightingThread extends Thread {
 
         private RGBLightValue currentLightColorSetting = new RGBLightValue(0, 0, 0);
-        private RGBLightValue currentLightColorValue = new RGBLightValue(0, 0, 0);
-        private float currentLightBrightness = 1f;
         private LightState state = LightState.STATIC;
         private float staticBrightness = 0.0f;
         private float musicBrightness = 1.0f;
@@ -89,9 +87,9 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
         private MPDSong currentSong;
         private long songStartTime;
 
-        private OutputStream lightingOutputStream;
         private InterruptableBufferedInputStreamWrapper bisw;
-        private long lastHostError;
+
+        private LightThread light = new LightThread();
 
         private void doInterrupt() {
             this.interrupt();
@@ -103,18 +101,14 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
 
         @Override
         public void run() {
-            updateLight();
+            light.start();
             while (true) {
                 switch (state) {
                     case STATIC:
-                        // Colour May have changed, if so, transition
-                        if (!currentLightColorSetting.equals(currentLightColorValue)
-                            || currentLightBrightness != staticBrightness) {
-                            transitionLight(currentLightColorSetting, staticBrightness);
-                            continue;
-                        }
+                        light.setLight(currentLightColorSetting, staticBrightness, 1000);
                         break;
                     case MUSIC:
+                        light.setLight(currentLightColorSetting, musicBrightness, 1000);
                         linkLightToMusic(musicBrightness);
                         continue;
                 }
@@ -127,29 +121,7 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
             }
         }
 
-        private void transitionLight(RGBLightValue desiredColour, float brightness) {
-            RGBLightValue oldColor = this.currentLightColorValue;
-            float oldBrightness = this.currentLightBrightness;
-            for (int i = 0; i <= 100; i++) {
-                float transitionAmt = (i / 100f);
-                this.currentLightColorValue = oldColor.transition(desiredColour, transitionAmt);
-                this.currentLightBrightness =
-                    transitionAmt * brightness + (1f - transitionAmt) * oldBrightness;
-                updateLight();
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    // If interrupted, need to cancel operation
-                    return;
-                }
-            }
-            this.currentLightColorValue = desiredColour;
-            this.currentLightBrightness = brightness;
-            updateLight();
-        }
-
         private void linkLightToMusic(float brightness) {
-            currentLightColorValue = currentLightColorSetting;
             if (this.currentSong != null && this.currentSong.getArtistName().equals("Feed Me")
                 && this.currentSong.getTitle().equals("Onstuh"))
                 this.playCueSheet();
@@ -176,9 +148,8 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
                     maxRight = Math.max(right, maxRight);
                     count++;
                     if (count >= 3000) {
-                        currentLightBrightness =
-                            Math.max(maxRight, maxLeft) / (float) Short.MAX_VALUE * brightness;
-                        updateLight();
+                        light.setBrightnessNow(Math.max(maxRight, maxLeft)
+                            / (float) Short.MAX_VALUE * brightness);
                         count = 0;
                         maxLeft = 0;
                         maxRight = 0;
@@ -216,6 +187,109 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
             }
         }
 
+    }
+
+    /**
+     * Thread to control a single light
+     */
+    private class LightThread extends Thread {
+
+        private OutputStream lightingOutputStream;
+        private long lastHostError;
+
+        private RGBLightValue currentLightColorValue = new RGBLightValue(0, 0, 0);
+        private float currentLightBrightness = 1f;
+
+        private RGBLightValue targetLightColorValue = new RGBLightValue(0, 0, 0);
+        private float targetLightBrightness = 1f;
+        private long transitionDuration = 0;
+
+        /** If an notify should be used instead of an interrupt */
+        private boolean waiting = false;
+        private boolean updated = false;
+
+        public void run() {
+            outer_loop: while (true) {
+
+                // Next Operation
+                final RGBLightValue targetLightColorValue;
+                final float targetLightBrightness;
+                final long transitionDuration;
+
+                synchronized (this) {
+                    while (!updated)
+                        try {
+                            this.wait();
+                        } catch (InterruptedException e) {
+                            continue;
+                        }
+                    targetLightColorValue = this.targetLightColorValue;
+                    targetLightBrightness = this.targetLightBrightness;
+                    transitionDuration = this.transitionDuration;
+                    this.updated = false;
+                }
+
+                // Check if light needs to be updated
+                if (!targetLightColorValue.equals(currentLightColorValue)
+                    || targetLightBrightness != currentLightBrightness) {
+
+                    if (transitionDuration == 0) {
+                        // Update immediately
+                        currentLightColorValue = targetLightColorValue;
+                        currentLightBrightness = targetLightBrightness;
+                        this.updateLight();
+                    } else {
+                        // Transition slowly
+                        RGBLightValue oldColor = this.currentLightColorValue;
+                        float oldBrightness = this.currentLightBrightness;
+                        long start = System.currentTimeMillis();
+                        long end = start + transitionDuration;
+                        long now = start;
+                        while ((now = System.currentTimeMillis()) < end) {
+                            float transitionAmt = (float) (now - start) / transitionDuration;
+                            ;
+                            this.currentLightColorValue =
+                                oldColor.transition(targetLightColorValue, transitionAmt);
+                            this.currentLightBrightness =
+                                transitionAmt * targetLightBrightness + (1f - transitionAmt)
+                                    * oldBrightness;
+                            updateLight();
+                            try {
+                                Thread.sleep(10);
+                            } catch (InterruptedException e) {
+                                // If interrupted, need to cancel transition
+                                System.out.println("interrupted, cancelling transition");
+                                continue outer_loop;
+                            }
+                            if (this.updated) {
+                                // If updated, need to cancel transition
+                                continue outer_loop;
+                            }
+                        }
+                        currentLightColorValue = targetLightColorValue;
+                        currentLightBrightness = targetLightBrightness;
+                        this.updateLight();
+                    }
+                }
+            }
+        }
+
+        public synchronized void setBrightnessNow(float brightness) {
+            this.targetLightBrightness = brightness;
+            this.transitionDuration = 0;
+            this.updated = true;
+            this.notify();
+        }
+
+        public synchronized void setLight(RGBLightValue color, float brightness,
+            long transitionDuration) {
+            this.targetLightBrightness = brightness;
+            this.targetLightColorValue = color;
+            this.transitionDuration = transitionDuration;
+            this.updated = true;
+            this.notify();
+        }
+
         private void updateLight() {
             Visitor<Listener> visitor =
                 l -> l.newLightColor(currentLightColorValue, currentLightBrightness);
@@ -248,7 +322,6 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
                 this.lightingOutputStream = null;
             }
         }
-
     }
 
     public interface Listener {
