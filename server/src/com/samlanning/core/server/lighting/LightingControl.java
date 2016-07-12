@@ -8,6 +8,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -124,7 +125,7 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
         private void linkLightToMusic(float brightness) {
             if (this.currentSong != null && this.currentSong.getArtistName().equals("Feed Me")
                 && this.currentSong.getTitle().equals("Onstuh"))
-                this.playCueSheet();
+                this.playCueSheet(getFeedMeOnstuhEventSheet());
             else
                 this.playFromFifo(brightness);
         }
@@ -170,10 +171,20 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
             }
         }
 
-        private void playCueSheet() {
+        private void playCueSheet(EventSheet<LightFlash> sheet) {
             System.out.println("playing cue sheet");
+            
+            EventPlayer.EventHandler<LightFlash> handler = new EventPlayer.EventHandler<LightFlash>() {
 
-            EventPlayer<String> player = new EventPlayer<>(getDummyEventSheet());
+                @Override
+                public void handle(LightFlash event) {
+                    System.out.println("flash! "+ event.duration);
+                    light.flashLight(event.color, 1f, event.duration);
+                }
+                
+            };
+
+            EventPlayer<LightFlash> player = new EventPlayer<>(sheet, handler);
 
             long startTime = this.songStartTime;
             try {
@@ -247,12 +258,13 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
                         long now = start;
                         while ((now = System.currentTimeMillis()) < end) {
                             float transitionAmt = (float) (now - start) / transitionDuration;
-                            ;
-                            this.currentLightColorValue =
-                                oldColor.transition(targetLightColorValue, transitionAmt);
-                            this.currentLightBrightness =
-                                transitionAmt * targetLightBrightness + (1f - transitionAmt)
-                                    * oldBrightness;
+                            synchronized(this) {
+                                this.currentLightColorValue =
+                                    oldColor.transition(targetLightColorValue, transitionAmt);
+                                this.currentLightBrightness =
+                                    transitionAmt * targetLightBrightness + (1f - transitionAmt)
+                                        * oldBrightness;
+                            }
                             updateLight();
                             try {
                                 Thread.sleep(10);
@@ -266,8 +278,10 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
                                 continue outer_loop;
                             }
                         }
-                        currentLightColorValue = targetLightColorValue;
-                        currentLightBrightness = targetLightBrightness;
+                        synchronized(this) {
+                            currentLightColorValue = targetLightColorValue;
+                            currentLightBrightness = targetLightBrightness;
+                        }
                         this.updateLight();
                     }
                 }
@@ -284,6 +298,16 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
         public synchronized void setLight(RGBLightValue color, float brightness,
             long transitionDuration) {
             this.targetLightBrightness = brightness;
+            this.targetLightColorValue = color;
+            this.transitionDuration = transitionDuration;
+            this.updated = true;
+            this.notify();
+        }
+
+        public synchronized void flashLight(RGBLightValue color, float brightness, long transitionDuration) {
+            this.currentLightColorValue = color;
+            this.currentLightBrightness = brightness;
+            this.targetLightBrightness = 0f;
             this.targetLightColorValue = color;
             this.transitionDuration = transitionDuration;
             this.updated = true;
@@ -327,19 +351,31 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
     public interface Listener {
         public void newLightColor(RGBLightValue color, float brightness);
     }
+    
+    private static class LightFlash {
+        public final long duration;
+        public final RGBLightValue color;
 
-    private static EventSheet<String> getDummyEventSheet() {
+        public LightFlash(long duration, RGBLightValue color) {
+            this.duration = duration;
+            this.color = color;
+        }
+    }
 
-        List<EventMarker<String>> markers = Arrays.<EventMarker<String>>asList(
-            new EventMarker<>(123, "123ms"),
-            new EventMarker<>(143, "143ms"),
-            new EventMarker<>(343, "343ms"),
-            new EventMarker<>(1000, "1s"),
-            new EventMarker<>(2000, "2s"),
-            new EventMarker<>(4000, "4s"),
-            new EventMarker<>(4000, "4s")
-            );
+    private static EventSheet<LightFlash> getFeedMeOnstuhEventSheet() {
 
+        List<EventMarker<LightFlash>> markers = new ArrayList<>();
+
+        int step = 935;
+        int offset = 900;
+        
+        
+        
+        for (int i = 0; i< 32; i += 2){
+            markers.add(new EventMarker<>(offset + i * step, new LightFlash(100, new RGBLightValue(0xff, 0, 0xff))));
+            markers.add(new EventMarker<>(offset + (i + 1) * step, new LightFlash(100, new RGBLightValue(0, 0xff, 0xff))));
+        }
+        
         return new EventSheet<>(markers);
     }
 

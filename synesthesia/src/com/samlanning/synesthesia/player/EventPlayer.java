@@ -13,10 +13,12 @@ public class EventPlayer<Event> {
     private static final long SKIP_THRESHOLD_MILLIS = 5;
 
     private final EventSheet<Event> sheet;
+    private final EventHandler<Event> handler;
     private PlayThread playThread;
 
-    public EventPlayer(EventSheet<Event> sheet) {
+    public EventPlayer(EventSheet<Event> sheet, EventHandler<Event> handler) {
         this.sheet = sheet;
+        this.handler = handler;
     }
 
     private synchronized void startThread(long playerStartTime) {
@@ -97,7 +99,7 @@ public class EventPlayer<Event> {
         }
 
         private void playEvent(Event event) {
-            System.out.format("Event: %s\n", event);
+            handler.handle(event);
         }
 
         private void finished() {
@@ -118,6 +120,10 @@ public class EventPlayer<Event> {
 
             }
         }
+    }
+    
+    public static interface EventHandler<Event> {
+        public void handle(Event event);
     }
 
 }

@@ -50,7 +50,7 @@ public class MPDMonitor extends Listenable<MPDMonitor.Listener> {
     private class T extends Thread {
 
         private static final int DELAY = 400;
-        private static final int MAX_START_TIME_DIFFERENCE_MILLIS = 200;
+        private static final int MAX_START_TIME_DIFFERENCE_MILLIS = 2000;
 
         private final MPD mpd;
         private Status lastStatus;
