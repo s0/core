@@ -73,23 +73,23 @@ public class MPDMonitor extends Listenable<MPDMonitor.Listener> {
                 final long elapsed = player.getElapsedTimeMillis();
                 final long now = System.currentTimeMillis();
                 final long songStartTime = now - elapsed;
-                // Update status if either:
-                // - the status has changed
-                // - the song start time has significantly changed since last calculated
-                if (status != lastStatus ||
-                    (status == Status.STATUS_PLAYING && (
+                boolean startTimeSignificantlyChanged = (status == Status.STATUS_PLAYING && (
                     songStartTime < lastStartTime - MAX_START_TIME_DIFFERENCE_MILLIS ||
-                    songStartTime > lastStartTime + MAX_START_TIME_DIFFERENCE_MILLIS))) {
-                    MPDMonitor.this.updateNewListenerVisitor(l -> l.updateBoth(status, songStartTime, song));
-                    MPDMonitor.this.visitListeners(l -> l.statusChanged(status, songStartTime));
-                    lastStatus = status;
-                    lastStartTime = songStartTime;
-                }
+                    songStartTime > lastStartTime + MAX_START_TIME_DIFFERENCE_MILLIS));
+                boolean startTimeSent = false;
                 if (song != lastSong && (song == null || !song.equals(lastSong))) {
                     MPDMonitor.this.updateNewListenerVisitor(l -> l.updateBoth(status, songStartTime, song));
                     MPDMonitor.this.visitListeners(l -> l.songChanged(song, songStartTime));
                     lastSong = song;
                     lastStartTime = songStartTime;
+                    startTimeSent = true;
+                }
+                if (status != lastStatus || (startTimeSignificantlyChanged && !startTimeSent)) {
+                    MPDMonitor.this.updateNewListenerVisitor(l -> l.updateBoth(status, songStartTime, song));
+                    MPDMonitor.this.visitListeners(l -> l.statusChanged(status, songStartTime));
+                    lastStatus = status;
+                    lastStartTime = songStartTime;
+                    startTimeSent = true;
                 }
                 try {
                     Thread.sleep(DELAY);

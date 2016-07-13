@@ -35,6 +35,10 @@ public class EventPlayer<Event> {
         }
     }
 
+    public void play(long playerStartTime) {
+        this.startThread(playerStartTime);
+    }
+
     public void playAndWait(long playerStartTime) throws InterruptedException {
         this.startThread(playerStartTime);
         playThread.waitUntilFinished();
@@ -107,6 +111,7 @@ public class EventPlayer<Event> {
             synchronized (this) {
                 this.notifyAll();
             }
+            handler.stopped();
         }
 
         public void stopOnInterrupt() {
@@ -120,10 +125,6 @@ public class EventPlayer<Event> {
 
             }
         }
-    }
-    
-    public static interface EventHandler<Event> {
-        public void handle(Event event);
     }
 
 }

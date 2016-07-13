@@ -8,17 +8,13 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
-import org.bff.javampd.song.MPDSong;
 import org.slf4j.Logger;
 
 import com.samlanning.core.server.util.InterruptableBufferedInputStreamWrapper;
 import com.samlanning.core.server.util.Listenable;
 import com.samlanning.core.server.util.Logging;
-import com.samlanning.synesthesia.player.EventMarker;
+import com.samlanning.synesthesia.player.EventHandler;
 import com.samlanning.synesthesia.player.EventPlayer;
 import com.samlanning.synesthesia.player.EventSheet;
 
@@ -67,10 +63,13 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
         thread.doInterrupt();
     }
 
-    public synchronized void setCurrentSong(MPDSong song, long songStartTime) {
-        thread.songStartTime = songStartTime;
-        thread.currentSong = song;
+    public synchronized void setUsingSynesthesia(boolean usingSynesthesia) {
+        thread.usingSynesthesia = usingSynesthesia;
         thread.doInterrupt();
+    }
+    
+    public void handleLightFlash(LightFlash flash){
+        thread.handleLightFlash(flash);
     }
 
     private enum LightState {
@@ -84,8 +83,8 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
         private LightState state = LightState.STATIC;
         private float staticBrightness = 0.0f;
         private float musicBrightness = 1.0f;
+        private boolean usingSynesthesia = false;
 
-        private MPDSong currentSong;
         private long songStartTime;
 
         private InterruptableBufferedInputStreamWrapper bisw;
@@ -123,10 +122,16 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
         }
 
         private void linkLightToMusic(float brightness) {
-            if (this.currentSong != null && this.currentSong.getArtistName().equals("Feed Me")
-                && this.currentSong.getTitle().equals("Onstuh"))
-                this.playCueSheet(getFeedMeOnstuhEventSheet());
+            if (usingSynesthesia)
+                // Wait until inturrupted
+                try {
+                    while(true)
+                        Thread.sleep(10000);
+                } catch (InterruptedException e1) {
+                    return;
+                }
             else
+                // Play from fifo
                 this.playFromFifo(brightness);
         }
 
@@ -174,12 +179,18 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
         private void playCueSheet(EventSheet<LightFlash> sheet) {
             System.out.println("playing cue sheet");
             
-            EventPlayer.EventHandler<LightFlash> handler = new EventPlayer.EventHandler<LightFlash>() {
+            EventHandler<LightFlash> handler = new EventHandler<LightFlash>() {
 
                 @Override
                 public void handle(LightFlash event) {
                     light.flashLight(event.color, 1f, event.duration);
                 }
+
+                @Override
+                public void started() {}
+
+                @Override
+                public void stopped() {}
                 
             };
 
@@ -194,6 +205,10 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
                 player.stop();
                 return;
             }
+        }
+        
+        public void handleLightFlash(LightFlash flash){
+            light.flashLight(flash.color, musicBrightness, flash.duration);
         }
 
     }
@@ -350,7 +365,7 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
         public void newLightColor(RGBLightValue color, float brightness);
     }
     
-    private static class LightFlash {
+    public static class LightFlash {
         public final long duration;
         public final RGBLightValue color;
 
@@ -358,23 +373,6 @@ public class LightingControl extends Listenable<LightingControl.Listener> {
             this.duration = duration;
             this.color = color;
         }
-    }
-
-    private static EventSheet<LightFlash> getFeedMeOnstuhEventSheet() {
-
-        List<EventMarker<LightFlash>> markers = new ArrayList<>();
-
-        int step = 935;
-        int offset = 900;
-        
-        
-        
-        for (int i = 0; i< 32; i += 2){
-            markers.add(new EventMarker<>(offset + i * step, new LightFlash(100, new RGBLightValue(0xff, 0, 0xff))));
-            markers.add(new EventMarker<>(offset + (i + 1) * step, new LightFlash(100, new RGBLightValue(0, 0xff, 0xff))));
-        }
-        
-        return new EventSheet<>(markers);
     }
 
 }
