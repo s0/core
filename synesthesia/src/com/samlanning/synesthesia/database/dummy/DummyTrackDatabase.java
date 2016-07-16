@@ -23,6 +23,7 @@ public class DummyTrackDatabase implements TrackDatabase {
         int offset = 900;
         for (int i = 0; i< 32; i += 2){
             markers.add(Long.valueOf(offset + i * step));
+            markers.add(Long.valueOf(offset + i * step + (step / 2)));
             markers.add(Long.valueOf(offset + (i + 1) * step));
         }
         
