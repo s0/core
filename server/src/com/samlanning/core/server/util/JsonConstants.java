@@ -1,4 +1,4 @@
-package com.samlanning.core.server.client_protocol.messages;
+package com.samlanning.core.server.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.DeserializationFeature;

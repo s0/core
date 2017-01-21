@@ -4,6 +4,8 @@ import org.bff.javampd.player.Player.Status;
 import org.bff.javampd.song.MPDSong;
 import org.slf4j.Logger;
 
+import com.samlanning.core.server.hue.HueLightStates.LightState;
+import com.samlanning.core.server.hue.HueLightStates.LightStateListener;
 import com.samlanning.core.server.lighting.RGBLightValue;
 import com.samlanning.core.server.lighting.LightingControl.LightFlash;
 import com.samlanning.core.server.mpd.MPDMonitor.Listener;
@@ -86,6 +88,28 @@ public class Behaviours {
                         song.getAlbumName());
             }
 
+        });
+    }
+
+    /**
+     * Watch the given hue light, and use it to set the color of the lighting
+     */
+    public static void watchLight(ServerSwitchboard switchboard, String watchLight) {
+        log.info("Watching hue light: " + watchLight);
+        switchboard.hue().addLightStateListener(new LightStateListener() {
+            
+            @Override
+            public void lightChanged(String key, LightState newState) {
+                if(!key.equals(watchLight))
+                    return;
+                if (newState.on) {
+                    switchboard.lighting().setStaticBrightness(1f);
+                    switchboard.lighting().setColor(newState.color);
+                } else {
+                    // Turn Brightness down to 0
+                    switchboard.lighting().setStaticBrightness(0f);
+                }
+            }
         });
     }
 

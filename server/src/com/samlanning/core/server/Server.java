@@ -17,6 +17,7 @@ import com.samlanning.core.server.behaviours.Behaviours;
 import com.samlanning.core.server.client_protocol.transports.WebSocketTransport;
 import com.samlanning.core.server.config.ConfigurationException;
 import com.samlanning.core.server.config.ServerConfig;
+import com.samlanning.core.server.hue.HueManager;
 import com.samlanning.core.server.lighting.LightingControl;
 import com.samlanning.core.server.mpd.MPDMonitor;
 import com.samlanning.core.server.switchboard.ServerSwitchboard;
@@ -110,6 +111,20 @@ public class Server {
 //                    }
 //                }
 //            }.start();
+        }
+
+        // Setup Hue
+        {
+            ServerConfig.HueConfig hueConfig = config.hue();
+            if (hueConfig != null) {
+                HueManager manager = new HueManager(hueConfig);
+                switchboard.addHueManager(manager);
+                manager.start();
+                
+                if (hueConfig.watchLight != null) {
+                    Behaviours.watchLight(switchboard, hueConfig.watchLight);
+                }
+            }
         }
 
         // Setup Websocket

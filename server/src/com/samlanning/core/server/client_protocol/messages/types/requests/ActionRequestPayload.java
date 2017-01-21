@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.samlanning.core.server.client_protocol.messages.JsonConstants;
+import com.samlanning.core.server.util.JsonConstants;
 
 public class ActionRequestPayload {
     

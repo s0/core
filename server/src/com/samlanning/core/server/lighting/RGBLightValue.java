@@ -1,5 +1,7 @@
 package com.samlanning.core.server.lighting;
 
+import java.awt.Color;
+
 public class RGBLightValue {
 
     public final int red;
@@ -26,7 +28,7 @@ public class RGBLightValue {
 
     @Override
     public String toString() {
-        return String.format("r:%x g:%x b:%x", this.red, this.green, this.blue);
+        return "RGBLightValue(#" + toHexString() + ")";
     }
 
     public static RGBLightValue fromString(String colorString) throws IllegalArgumentException {
@@ -40,6 +42,14 @@ public class RGBLightValue {
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Not a hexadecimal colour");
         }
+    }
+    
+    public static RGBLightValue fromHSB(float hue, float saturation, float brightness) {
+        int rgb = Color.HSBtoRGB(hue, saturation, brightness);
+        int r = (rgb >> 16) & 0xff;
+        int g = (rgb >> 8) & 0xff;
+        int b = (rgb >> 0) & 0xff;
+        return new RGBLightValue(r, g, b);
     }
 
     @Override

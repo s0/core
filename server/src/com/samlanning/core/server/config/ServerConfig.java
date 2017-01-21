@@ -16,6 +16,8 @@ public class ServerConfig {
 
     private final LightingConfig lighting;
 
+    private final HueConfig hue;
+
     private final String websocketHost;
     private final int websocketPort;
 
@@ -43,6 +45,21 @@ public class ServerConfig {
         }
     }
 
+    public static class HueConfig {
+        public final String host;
+        public final String username;
+        /**
+         * If set, use this light to pick lighting
+         */
+        public final String watchLight;
+
+        public HueConfig(String host, String username, String watchLight) {
+            this.host = host;
+            this.username = username;
+            this.watchLight = watchLight;
+        }
+    }
+
     public ServerConfig(InputStream configFile) throws ConfigurationException {
         Yaml yaml = new Yaml();
         Object configData;
@@ -62,7 +79,7 @@ public class ServerConfig {
         // MPD Config
         {
 
-            Map<?, ?> mpdConfig = getMap(configRoot, "mpd", false, "mpd");
+            Map<?, ?> mpdConfig = getMap(configRoot, "mpd", false);
             if (mpdConfig != null) {
                 String host = getRequiredString(mpdConfig, "host", "mpd host");
                 int port = getPort(mpdConfig, "port", -1, "mpd port");
@@ -75,7 +92,7 @@ public class ServerConfig {
         // Lighting Config
         {
 
-            Map<?, ?> lightingConfig = getMap(configRoot, "lighting", false, "lighting");
+            Map<?, ?> lightingConfig = getMap(configRoot, "lighting", false);
             if (lightingConfig != null) {
                 String host = getRequiredString(lightingConfig, "host", "lighting host");
                 int port = getPort(lightingConfig, "port", -1, "lighting port");
@@ -87,9 +104,22 @@ public class ServerConfig {
             }
         }
 
+        // Hue Config
+        {
+            Map<?, ?> hueConfig = getMap(configRoot, "hue", false);
+            if (hueConfig != null) {
+                String host = getRequiredString(hueConfig, "host", "hue host");
+                String username = getRequiredString(hueConfig, "username", "hue username");
+                String watchLight = getString(hueConfig, "watchLight", "hue watchLight", false);
+                this.hue = new HueConfig(host, username, watchLight);
+            } else {
+                this.hue = null;
+            }
+        }
+
         // WebSocket Config
         {
-            Map<?, ?> websocketConfig = getMap(configRoot, "websocket", true, "websocket");
+            Map<?, ?> websocketConfig = getMap(configRoot, "websocket", true);
             this.websocketHost = getRequiredString(websocketConfig, "host", "websocket host");
             this.websocketPort = getPort(websocketConfig, "port", null, "websocket port");
         }
@@ -97,7 +127,7 @@ public class ServerConfig {
         // Command-Line Actions Config
         {
             Map<String, String> commandLineActions = new LinkedHashMap<>();
-            Map<?, ?> actionsConfig = getMap(configRoot, "actions", false, "actions");
+            Map<?, ?> actionsConfig = getMap(configRoot, "actions", false);
             if (actionsConfig != null) {
                 for (Map.Entry<?, ?> entry : actionsConfig.entrySet()) {
                     Object key = entry.getKey();
@@ -114,7 +144,27 @@ public class ServerConfig {
         }
     }
 
-    private Map<?, ?> getMap(Map<?, ?> map, String key, boolean required, String configIdentifier)
+    private Map<?, ?> getMap(Map<?, ?> map, String key, boolean required)
+        throws ConfigurationException {
+        Object object = map.get(key);
+        if (object == null) {
+            if (required)
+                throw new ConfigurationException("missing required config: " + key);
+            else
+                return null;
+        } else if (object instanceof Map) {
+            return (Map<?, ?>) object;
+        } else {
+            throw new ConfigurationException(key + " is not a map");
+        }
+    }
+
+    private static String getRequiredString(Map<?, ?> map, String key, String configIdentifier)
+        throws ConfigurationException {
+        return getString(map, key, configIdentifier, true);
+    }
+
+    private static String getString(Map<?, ?> map, String key, String configIdentifier, boolean required)
         throws ConfigurationException {
         Object object = map.get(key);
         if (object == null) {
@@ -122,22 +172,8 @@ public class ServerConfig {
                 throw new ConfigurationException("missing required config: " + configIdentifier);
             else
                 return null;
-        } else if (object instanceof Map) {
-            return (Map<?, ?>) object;
         } else {
-            throw new ConfigurationException(configIdentifier + " is not a map");
-        }
-    }
-
-    private static String getRequiredString(Map<?, ?> map, String key, String configIdentifier)
-        throws ConfigurationException {
-        Object object = map.get(key);
-        if (object == null) {
-            throw new ConfigurationException("missing required config: " + configIdentifier);
-        } else if (object instanceof String) {
-            return (String) object;
-        } else {
-            throw new ConfigurationException("invalid " + configIdentifier);
+            return object.toString();
         }
     }
 
@@ -175,6 +211,10 @@ public class ServerConfig {
         return lighting;
     }
 
+    public HueConfig hue() {
+        return hue;
+    }
+    
     public String websocketHost() {
         return websocketHost;
     }

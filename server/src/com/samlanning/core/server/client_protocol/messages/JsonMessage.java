@@ -7,6 +7,7 @@ import com.samlanning.core.server.client_protocol.messages.types.ErrorMessage;
 import com.samlanning.core.server.client_protocol.messages.types.EventMessage;
 import com.samlanning.core.server.client_protocol.messages.types.PingMessage;
 import com.samlanning.core.server.client_protocol.messages.types.RequestMessage;
+import com.samlanning.core.server.util.JsonConstants;
 
 public class JsonMessage {
 

@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 
 import com.samlanning.core.server.client_protocol.messages.types.ErrorMessage.ErrorType;
 import com.samlanning.core.server.config.ServerConfig;
+import com.samlanning.core.server.hue.HueManager;
 import com.samlanning.core.server.lighting.LightingControl;
 import com.samlanning.core.server.lighting.RGBLightValue;
 import com.samlanning.core.server.mpd.MPDMonitor;
@@ -19,6 +20,7 @@ public class ServerSwitchboard {
     private final ServerConfig config;
     private MPDMonitor mpdMonitor;
     private LightingControl lightingControl;
+    private HueManager hueManager;
 
     public ServerSwitchboard(ServerConfig config) {
         this.config = config;
@@ -30,6 +32,10 @@ public class ServerSwitchboard {
 
     public synchronized void addLightingControl(LightingControl lightingControl) {
         this.lightingControl = lightingControl;
+    }
+
+    public synchronized void addHueManager(HueManager hueManager) {
+        this.hueManager = hueManager;
     }
 
     public synchronized void listenToMPD(MPDMonitor.Listener listener) {
@@ -46,6 +52,12 @@ public class ServerSwitchboard {
         if (lightingControl == null)
             throw new RuntimeException("Lighting not setup");
         return lightingControl;
+    }
+
+    public synchronized HueManager hue() {
+        if (hueManager == null)
+            throw new RuntimeException("Hue Manager not setup");
+        return hueManager;
     }
 
     public synchronized void performAction(String action) throws ActionError {
