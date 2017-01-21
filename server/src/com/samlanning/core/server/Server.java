@@ -52,26 +52,32 @@ public class Server {
 
         // Setup MPD
         {
-            MPD.Builder builder = new MPD.Builder();
-            builder.server(config.mpdHost());
-            if (config.mpdPort() > 0) {
-                builder.port(config.mpdPort());
+            ServerConfig.MPDConfig mpdConfig = config.mpd();
+            if (mpdConfig != null) {
+                MPD.Builder builder = new MPD.Builder();
+                builder.server(mpdConfig.host);
+                if (mpdConfig.port > 0) {
+                    builder.port(mpdConfig.port);
+                }
+
+                MPDMonitor monitor = new MPDMonitor(builder.build());
+                monitor.start();
+
+                switchboard.addMPDMonitor(monitor);
             }
-
-            MPDMonitor monitor = new MPDMonitor(builder.build());
-            monitor.start();
-
-            switchboard.addMPDMonitor(monitor);
         }
 
         // Setup Lighting
         {
-            LightingControl lighting =
-                new LightingControl(config.lightingHost(), config.lightingPort());
-            lighting.start();
-            lighting.setColor(config.lightingDefaultColor());
+            ServerConfig.LightingConfig lightingConfig = config.lighting();
+            if (lightingConfig != null) {
+                LightingControl lighting =
+                    new LightingControl(lightingConfig.host, lightingConfig.port);
+                lighting.start();
+                lighting.setColor(lightingConfig.defaultColor);
 
-            switchboard.addLightingControl(lighting);
+                switchboard.addLightingControl(lighting);
+            }
             
             // Lighting Test
 //            new Thread(){

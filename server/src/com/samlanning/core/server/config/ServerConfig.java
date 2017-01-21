@@ -12,17 +12,36 @@ import com.samlanning.core.server.lighting.RGBLightValue;
 
 public class ServerConfig {
 
-    private final String mpdHost;
-    private final int mpdPort;
+    private final MPDConfig mpd;
 
-    private final String lightingHost;
-    private final int lightingPort;
-    private final RGBLightValue lightingDefaultColor;
+    private final LightingConfig lighting;
 
     private final String websocketHost;
     private final int websocketPort;
 
     private final Map<String, String> commandLineActions;
+
+    public static class LightingConfig {
+        public final String host;
+        public final int port;
+        public final RGBLightValue defaultColor;
+
+        public LightingConfig(String host, int port, RGBLightValue defaultColor) {
+            this.host = host;
+            this.port = port;
+            this.defaultColor = defaultColor;
+        }
+    }
+
+    public static class MPDConfig {
+        public final String host;
+        public final int port;
+
+        public MPDConfig(String host, int port) {
+            this.host = host;
+            this.port = port;
+        }
+    }
 
     public ServerConfig(InputStream configFile) throws ConfigurationException {
         Yaml yaml = new Yaml();
@@ -43,19 +62,29 @@ public class ServerConfig {
         // MPD Config
         {
 
-            Map<?, ?> mpdConfig = getMap(configRoot, "mpd", true, "mpd");
-            this.mpdHost = getRequiredString(mpdConfig, "host", "mpd host");
-            this.mpdPort = getPort(mpdConfig, "port", -1, "mpd port");
+            Map<?, ?> mpdConfig = getMap(configRoot, "mpd", false, "mpd");
+            if (mpdConfig != null) {
+                String host = getRequiredString(mpdConfig, "host", "mpd host");
+                int port = getPort(mpdConfig, "port", -1, "mpd port");
+                this.mpd = new MPDConfig(host, port);
+            } else {
+                this.mpd = null;
+            }
         }
 
         // Lighting Config
         {
 
-            Map<?, ?> lightingConfig = getMap(configRoot, "lighting", true, "lighting");
-            this.lightingHost = getRequiredString(lightingConfig, "host", "lighting host");
-            this.lightingPort = getPort(lightingConfig, "port", -1, "lighting port");
-            this.lightingDefaultColor = RGBLightValue.fromString(
-                getRequiredString(lightingConfig, "defaultColor", "lighting port"));
+            Map<?, ?> lightingConfig = getMap(configRoot, "lighting", false, "lighting");
+            if (lightingConfig != null) {
+                String host = getRequiredString(lightingConfig, "host", "lighting host");
+                int port = getPort(lightingConfig, "port", -1, "lighting port");
+                RGBLightValue defaultColor = RGBLightValue.fromString(
+                    getRequiredString(lightingConfig, "defaultColor", "lighting port"));
+                this.lighting = new LightingConfig(host, port, defaultColor);
+            } else {
+                this.lighting = null;
+            }
         }
 
         // WebSocket Config
@@ -138,24 +167,12 @@ public class ServerConfig {
 
     }
 
-    public String mpdHost() {
-        return mpdHost;
+    public MPDConfig mpd() {
+        return mpd;
     }
 
-    public int mpdPort() {
-        return mpdPort;
-    }
-
-    public String lightingHost() {
-        return lightingHost;
-    }
-
-    public int lightingPort() {
-        return lightingPort;
-    }
-
-    public RGBLightValue lightingDefaultColor() {
-        return lightingDefaultColor;
+    public LightingConfig lighting() {
+        return lighting;
     }
 
     public String websocketHost() {
