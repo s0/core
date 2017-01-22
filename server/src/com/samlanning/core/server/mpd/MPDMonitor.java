@@ -70,7 +70,7 @@ public class MPDMonitor extends Listenable<MPDMonitor.Listener> {
             while (true) {
                 final Status status = player.getStatus();
                 final MPDSong song = player.getCurrentSong();
-                final long elapsed = player.getElapsedTimeMillis();
+                final long elapsed = song == null ? 0 : player.getElapsedTimeMillis();
                 final long now = System.currentTimeMillis();
                 final long songStartTime = now - elapsed;
                 boolean startTimeSignificantlyChanged = (status == Status.STATUS_PLAYING && (
