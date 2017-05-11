@@ -30,7 +30,7 @@ define([], function(){
     this.callback = callback;
     this.id = _next_listener_id ++;
     this.attached_to = [];
-    this.cleared == false;
+    this.cleared = false;
   }
 
   Listener.prototype.call = function() {
